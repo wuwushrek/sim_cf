@@ -81,7 +81,7 @@ make
 
 Then launch cf2 with the following command : 
 ```sh
-#./cf2 ip_address port --> currently INADDR_ANY - 19950 are the default address/port
+#./cf2 port ip_address --> currently INADDR_ANY - 19950 are the default address/port
 ./cf2
 ```
 
