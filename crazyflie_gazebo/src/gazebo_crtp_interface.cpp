@@ -67,7 +67,7 @@ void GazeboCRTPInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
 	// Initialize crazyflie interface
 	getSdfParam<std::string>(_sdf, "crazyflieURI", crazyflie_uri_, crazyflie_uri_);
 
-	std::string m_tf_prefix = namespace_+"/"+model_->GetName();
+	std::string m_tf_prefix = model_->GetName();
 
 	bool enable_logging, enable_logging_imu, enable_logging_magnetic_field,enable_logging_temperature,enable_parameters;
 	bool enable_logging_pressure, enable_logging_battery, enable_logging_packets, use_ros_time;

@@ -13,7 +13,7 @@
   <!-- Crazyflie arguments -->
   <!-- <arg name="uri" default="usb://0" /> -->
   <arg name="uri" default="INADDR_ANY://19950" />
-  <arg name="tf_prefix" default="quad1" />
+  <arg name="tf_prefix" default="crazyflie" />
   <arg name="roll_trim" default="0" />
   <arg name="pitch_trim" default="0" />
   <arg name="enable_logging" default="true" />

@@ -45,7 +45,7 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://rotors_description/meshes/${mesh_file}"
+          <mesh filename="$(arg rotors_description_dir)/meshes/${mesh_file}"
             scale="${mesh_scale}" />
           <!-- <box size="${body_width} ${body_width} ${body_height}"/> --> <!-- [m] [m] [m] -->
         </geometry>
@@ -109,11 +109,11 @@
           <!-- <cylinder length="0.005" radius="${radius_rotor}"/> --> <!-- [m] -->
           <!-- <mesh filename="package://rotors_description/meshes/propeller_${direction}.dae" -->
           <xacro:if value="${use_own_mesh}">
-            <mesh filename="package://rotors_description/meshes/${mesh}"
+            <mesh filename="$(arg rotors_description_dir)/meshes/${mesh}"
               scale="${mesh_scale}" />
           </xacro:if>
           <xacro:unless value="${use_own_mesh}">
-            <mesh filename="package://rotors_description/meshes/${mesh}_${direction}.dae" scale="${mesh_scale}" />
+            <mesh filename="$(arg rotors_description_dir)/meshes/${mesh}_${direction}.dae" scale="${mesh_scale}" />
           </xacro:unless>
           <!-- <box size="${2*radius_rotor} 0.01 0.005"/> -->
         </geometry>

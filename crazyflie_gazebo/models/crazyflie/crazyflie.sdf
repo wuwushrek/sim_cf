@@ -38,7 +38,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://rotors_description/meshes/crazyflie.dae</uri>
+            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -220,7 +220,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -286,7 +286,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -352,7 +352,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -418,7 +418,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
