@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="world_name" default="crazyflie"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="true"/>
+
+  <arg name="only_command" default="false" />
+
+  <!-- The following line causes gzmsg and gzerr messages to be printed to the console
+      (even when Gazebo is started through roslaunch) -->
+  <arg name="verbose" default="true"/>
+
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find crazyflie_gazebo)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find crazyflie_gazebo)/models"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find crazyflie_gazebo)/worlds/$(arg world_name).world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="verbose" value="$(arg verbose)"/>
+  </include>
+
+  <group ns="crazyflie">
+    <!-- Launch joy node with the autorepeat_rate parameter -->
+    <node pkg="joy" name="joy" type="joy_node" output="screen" >
+      <param name="autorepeat_rate" value="50"/>
+    </node>
+
+    <!-- Teleop node for cf control -->
+    <node pkg="crazyflie_gazebo" name="cf_joy" type="joy_control_node" output="screen">
+      <param name="only_command" value = "$(arg only_command)" />
+      <param name="LB" value="4" />
+      <param name="RB" value="5" />
+      <param name="LT" value="2" />
+      <param name="RT" value="5" />
+      <param name="X" value="2" />
+      <param name="Y" value="3" />
+      <param name="A" value="0" />
+      <param name="B" value="1" />
+      <param name="Start" value="7" />
+      <param name="Back" value="6" />
+      <param name="up_down_axis_left" value="1" />
+      <param name="left_right_axis_left" value="0" />
+      <param name="up_down_axis_right" value="4" />
+      <param name="left_right_axis_right" value="3" />
+      <param name="left_cross_key" value="6" />
+      <param name="right_cross_key" value="6" />
+      <param name="up_cross_key" value="7" />
+      <param name="down_cross_key" value="7" />
+      <param name="takeoff_duration" value="2.0" />
+      <param name="land_duration" value="4.0" />
+      <param name="takeoff_height" value="0.5"/>
+      <param name="groupMask" value="0"/>
+      <!-- <param name="yaw_rate_max" value="3.14" /> -->
+    </node>
+  </group>
+</launch>

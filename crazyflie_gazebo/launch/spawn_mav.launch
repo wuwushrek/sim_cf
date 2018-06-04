@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="mav_name" default="crazyflie"/>
+  <arg name="model" default="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro"/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.03"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="log_file" default="$(arg mav_name)"/>
+  <arg name="enable_wind" default="false"/>
+  <arg name="tf_prefix" default="$(arg tf_prefix)"/>
+  <arg name="rotors_description_dir" default="$(find crazyflie_gazebo)/models/rotors_description"/>
+
+  <arg name="uri" default="usb://0"/>
+  <arg name="roll_trim" default="0" />
+  <arg name="pitch_trim" default="0" />
+  <arg name="enable_logging" default="true" />
+  <arg name="enable_parameters" default="true" />
+  <arg name="use_ros_time" default="true" />
+  <arg name="enable_logging_imu" default="true" />
+  <arg name="enable_logging_temperature" default="true" />
+  <arg name="enable_logging_magnetic_field" default="true" />
+  <arg name="enable_logging_pressure" default="true" />
+  <arg name="enable_logging_battery" default="true" />
+  <arg name="enable_logging_packets" default="true" />
+
+  <arg name="color_prop_front" default="Blue" />
+  <arg name="color_prop_back" default="Red" />
+
+
+  <!-- send the robot XML to param server -->
+  <param name="robot_description" command="
+    $(find xacro)/xacro '$(arg model)'
+    rotors_description_dir:=$(arg rotors_description_dir)
+    enable_ground_truth:=$(arg enable_ground_truth)
+    enable_wind:=$(arg enable_wind)
+    log_file:=$(arg log_file)
+    mav_name:=$(arg mav_name)
+    uri:=$(arg uri)
+    roll_trim:=$(arg roll_trim)
+    pitch_trim:=$(arg pitch_trim)
+    enable_logging:=$(arg enable_logging)
+    enable_parameters:=$(arg enable_parameters)
+    use_ros_time:=$(arg use_ros_time)
+    enable_logging_imu:=$(arg enable_logging_imu)
+    enable_logging_magnetic_field:=$(arg enable_logging_magnetic_field)
+    enable_logging_temperature:=$(arg enable_logging_temperature)
+    enable_logging_pressure:=$(arg enable_logging_pressure)
+    enable_logging_battery:=$(arg enable_logging_battery)
+    enable_logging_packets:=$(arg enable_logging_packets)
+    color_prop_back:=$(arg color_prop_back)
+    color_prop_front:=$(arg color_prop_front)
+    namespace:=$(arg tf_prefix) "
+  />
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_$(arg tf_prefix)" pkg="gazebo_ros" type="spawn_model"
+   args="-param robot_description
+         -urdf
+         -x $(arg x)
+         -y $(arg y)
+         -z $(arg z)
+         -model $(arg tf_prefix)"
+   respawn="false" output="screen">
+  </node>
+</launch>

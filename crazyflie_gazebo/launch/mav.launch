@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="mav_name" default="crazyflie"/>
+  <arg name="world_name" default="basic"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="enable_wind" default="false"/>
+  <arg name="log_file" default="$(arg mav_name)"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="true"/>
+
+  <!-- Crazyflie arguments -->
+  <!-- <arg name="uri" default="usb://0" /> -->
+  <arg name="uri" default="INADDR_ANY://19950" />
+  <arg name="tf_prefix" default="quad1" />
+  <arg name="roll_trim" default="0" />
+  <arg name="pitch_trim" default="0" />
+  <arg name="enable_logging" default="true" />
+  <arg name="enable_parameters" default="true" />
+  <arg name="use_ros_time" default="true" />
+  <arg name="enable_logging_imu" default="true" />
+  <arg name="enable_logging_temperature" default="false" />
+  <arg name="enable_logging_magnetic_field" default="false" />
+  <arg name="enable_logging_pressure" default="false" />
+  <arg name="enable_logging_battery" default="false" />
+  <arg name="enable_logging_packets" default="false" />
+
+  <arg name="color_prop_front" default="Blue" />
+  <arg name="color_prop_back" default="Red" />
+
+  <!-- The following line causes gzmsg and gzerr messages to be printed to the console
+      (even when Gazebo is started through roslaunch) -->
+  <arg name="verbose" default="true"/>
+
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find crazyflie_gazebo)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find crazyflie_gazebo)/models"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find crazyflie_gazebo)/worlds/$(arg world_name).world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="verbose" value="$(arg verbose)"/>
+  </include>
+
+  <group ns="$(arg mav_name)">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
+      <arg name="mav_name" value="$(arg mav_name)" />
+      <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
+      <arg name="enable_wind" value="$(arg enable_wind)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)"/>
+
+      <arg name="uri" value="$(arg uri)"/>
+      <arg name="tf_prefix" value="$(arg tf_prefix)"/>
+      <arg name="roll_trim" value="$(arg roll_trim)"/>
+      <arg name="pitch_trim" value="$(arg pitch_trim)"/>
+      <arg name="enable_logging" value="$(arg enable_logging)"/>
+      <arg name="enable_parameters" value="$(arg enable_parameters)"/>
+      <arg name="use_ros_time" value="$(arg use_ros_time)"/>
+      <arg name="enable_logging_imu" value="$(arg enable_logging_imu)"/>
+      <arg name="enable_logging_temperature" value="$(arg enable_logging_temperature)"/>
+      <arg name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field)"/>
+      <arg name="enable_logging_pressure" value="$(arg enable_logging_pressure)"/>
+      <arg name="enable_logging_battery" value="$(arg enable_logging_battery)"/>
+      <arg name="enable_logging_packets" value="$(arg enable_logging_packets)"/>
+      <arg name="color_prop_front" default="$(arg color_prop_front)" />
+      <arg name="color_prop_back" default="$(arg color_prop_back)" />
+    </include>
+  </group>
+</launch>

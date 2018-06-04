@@ -1,0 +1,605 @@
+<sdf version='1.6'>
+  <model name='crazyflie'>
+    <link name='base_link'>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>0.025</mass>
+        <inertia>
+          <ixx>1.65717e-05</ixx>
+          <ixy>8.30806e-07</ixy>
+          <ixz>7.18277e-07</ixz>
+          <iyy>1.66556e-05</iyy>
+          <iyz>1.8002e-06</iyz>
+          <izz>2.92617e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='base_link_inertia_collision'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 0.025</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <min_depth>0.001</min_depth>
+              <max_vel>0</max_vel>
+            </ode>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='base_link_inertia_visual'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://rotors_description/meshes/crazyflie.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>__default__</name>
+          </script>
+        </material>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay/>
+      <self_collide>0</self_collide>
+    </link>
+    <link name='//imu_link'>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>1e-05</mass>
+        <inertia>
+          <ixx>1e-10</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-10</iyy>
+          <iyz>0</iyz>
+          <izz>1e-10</izz>
+        </inertia>
+      </inertial>
+    </link>
+    <joint name='//imu_joint' type='revolute'>
+      <child>//imu_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='//magnetometer_link'>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>1e-05</mass>
+        <inertia>
+          <ixx>1e-10</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-10</iyy>
+          <iyz>0</iyz>
+          <izz>1e-10</izz>
+        </inertia>
+      </inertial>
+    </link>
+    <joint name='//magnetometer_joint' type='revolute'>
+      <child>//magnetometer_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='//pressure_sensor_link'>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>1e-05</mass>
+        <inertia>
+          <ixx>1e-10</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-10</iyy>
+          <iyz>0</iyz>
+          <izz>1e-10</izz>
+        </inertia>
+      </inertial>
+    </link>
+    <joint name='//pressure_sensor_joint' type='revolute'>
+      <child>//pressure_sensor_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='/odometry_sensorgt_link'>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>1e-05</mass>
+        <inertia>
+          <ixx>1e-10</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-10</iyy>
+          <iyz>0</iyz>
+          <izz>1e-10</izz>
+        </inertia>
+      </inertial>
+    </link>
+    <joint name='/odometry_sensorgt_joint' type='revolute'>
+      <child>/odometry_sensorgt_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='rotor_0'>
+      <pose frame=''>0.032527 -0.032527 0.0125 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>0.00075</mass>
+        <inertia>
+          <ixx>1.61875e-07</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.86375e-06</iyy>
+          <iyz>0</iyz>
+          <izz>9.01687e-06</izz>
+        </inertia>
+      </inertial>
+      <collision name='rotor_0_collision'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.005</length>
+            <radius>0.0225</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='rotor_0_visual'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Blue</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay/>
+      <self_collide>0</self_collide>
+    </link>
+    <joint name='rotor_0_joint' type='revolute'>
+      <child>rotor_0</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='rotor_1'>
+      <pose frame=''>-0.032527 -0.032527 0.0125 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>0.00075</mass>
+        <inertia>
+          <ixx>1.61875e-07</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.86375e-06</iyy>
+          <iyz>0</iyz>
+          <izz>9.01687e-06</izz>
+        </inertia>
+      </inertial>
+      <collision name='rotor_1_collision'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.005</length>
+            <radius>0.0225</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='rotor_1_visual'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Red</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay/>
+      <self_collide>0</self_collide>
+    </link>
+    <joint name='rotor_1_joint' type='revolute'>
+      <child>rotor_1</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='rotor_2'>
+      <pose frame=''>-0.032527 0.032527 0.0125 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>0.00075</mass>
+        <inertia>
+          <ixx>1.61875e-07</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.86375e-06</iyy>
+          <iyz>0</iyz>
+          <izz>9.01687e-06</izz>
+        </inertia>
+      </inertial>
+      <collision name='rotor_2_collision'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.005</length>
+            <radius>0.0225</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='rotor_2_visual'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Red</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay/>
+      <self_collide>0</self_collide>
+    </link>
+    <joint name='rotor_2_joint' type='revolute'>
+      <child>rotor_2</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='rotor_3'>
+      <pose frame=''>0.032527 0.032527 0.0125 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <mass>0.00075</mass>
+        <inertia>
+          <ixx>1.61875e-07</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.86375e-06</iyy>
+          <iyz>0</iyz>
+          <izz>9.01687e-06</izz>
+        </inertia>
+      </inertial>
+      <collision name='rotor_3_collision'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.005</length>
+            <radius>0.0225</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='rotor_3_visual'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://rotors_description/meshes/crazyflie_prop.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Blue</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay/>
+      <self_collide>0</self_collide>
+    </link>
+    <joint name='rotor_3_joint' type='revolute'>
+      <child>rotor_3</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <plugin name='rosbag' filename='librotors_gazebo_multirotor_base_plugin.so'>
+      <robotNamespace>/</robotNamespace>
+      <linkName>base_link</linkName>
+      <rotorVelocitySlowdownSim>70</rotorVelocitySlowdownSim>
+    </plugin>
+    <plugin name='front_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+      <robotNamespace>/</robotNamespace>
+      <jointName>rotor_0_joint</jointName>
+      <linkName>rotor_0</linkName>
+      <turningDirection>ccw</turningDirection>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <maxRotVelocity>3052</maxRotVelocity>
+      <motorConstant>1.2819184e-08</motorConstant>
+      <momentConstant>0.005964552</momentConstant>
+      <commandSubTopic>/gazebo/command/motor_speed</commandSubTopic>
+      <motorNumber>0</motorNumber>
+      <rotorDragCoefficient>9.1785e-07</rotorDragCoefficient>
+      <rollingMomentCoefficient>1e-07</rollingMomentCoefficient>
+      <motorSpeedPubTopic>/motor_speed/0</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>70</rotorVelocitySlowdownSim>
+    </plugin>
+    <plugin name='back_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+      <robotNamespace>/</robotNamespace>
+      <jointName>rotor_2_joint</jointName>
+      <linkName>rotor_2</linkName>
+      <turningDirection>ccw</turningDirection>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <maxRotVelocity>3052</maxRotVelocity>
+      <motorConstant>1.2819184e-08</motorConstant>
+      <momentConstant>0.005964552</momentConstant>
+      <commandSubTopic>/gazebo/command/motor_speed</commandSubTopic>
+      <motorNumber>2</motorNumber>
+      <rotorDragCoefficient>9.1785e-07</rotorDragCoefficient>
+      <rollingMomentCoefficient>1e-07</rollingMomentCoefficient>
+      <motorSpeedPubTopic>/motor_speed/2</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>70</rotorVelocitySlowdownSim>
+    </plugin>
+    <plugin name='front_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+      <robotNamespace>/</robotNamespace>
+      <jointName>rotor_3_joint</jointName>
+      <linkName>rotor_3</linkName>
+      <turningDirection>cw</turningDirection>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <maxRotVelocity>3052</maxRotVelocity>
+      <motorConstant>1.2819184e-08</motorConstant>
+      <momentConstant>0.005964552</momentConstant>
+      <commandSubTopic>/gazebo/command/motor_speed</commandSubTopic>
+      <motorNumber>3</motorNumber>
+      <rotorDragCoefficient>9.1785e-07</rotorDragCoefficient>
+      <rollingMomentCoefficient>1e-07</rollingMomentCoefficient>
+      <motorSpeedPubTopic>/motor_speed/3</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>70</rotorVelocitySlowdownSim>
+    </plugin>
+    <plugin name='back_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+      <robotNamespace>/</robotNamespace>
+      <jointName>rotor_1_joint</jointName>
+      <linkName>rotor_1</linkName>
+      <turningDirection>cw</turningDirection>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <maxRotVelocity>3052</maxRotVelocity>
+      <motorConstant>1.2819184e-08</motorConstant>
+      <momentConstant>0.005964552</momentConstant>
+      <commandSubTopic>/gazebo/command/motor_speed</commandSubTopic>
+      <motorNumber>1</motorNumber>
+      <rotorDragCoefficient>9.1785e-07</rotorDragCoefficient>
+      <rollingMomentCoefficient>1e-07</rollingMomentCoefficient>
+      <motorSpeedPubTopic>/motor_speed/1</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>70</rotorVelocitySlowdownSim>
+    </plugin>
+    <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
+      <robotNamespace>/</robotNamespace>
+      <linkName>//imu_link</linkName>
+      <imuTopic>gazebo/imu</imuTopic>
+      <gyroscopeNoiseDensity>0.00017667</gyroscopeNoiseDensity>
+      <gyroscopeRandomWalk>9.2542e-06</gyroscopeRandomWalk>
+      <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+      <gyroscopeTurnOnBiasSigma>0.03</gyroscopeTurnOnBiasSigma>
+      <accelerometerNoiseDensity>0.0032</accelerometerNoiseDensity>
+      <accelerometerRandomWalk>0.00013524</accelerometerRandomWalk>
+      <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+      <accelerometerTurnOnBiasSigma>0.1</accelerometerTurnOnBiasSigma>
+    </plugin>
+    <plugin name='rotors_gazebo_magnetometer_plugin' filename='librotors_gazebo_magnetometer_plugin.so'>
+      <robotNamespace>/</robotNamespace>
+      <linkName>//magnetometer_link</linkName>
+      <magnetometerTopic>gazebo/magnetic_field</magnetometerTopic>
+      <rate>10</rate>
+      <refMagNorth>2.1493e-05</refMagNorth>
+      <refMagEast>8.15e-07</refMagEast>
+      <refMagDown>4.2795e-05</refMagDown>
+      <noiseNormal>7.07868618e-07 6.73106045e-07 7.28724033e-07</noiseNormal>
+      <noiseUniformInitialBias>0.0000004 0.0000004 0.0000004</noiseUniformInitialBias>
+    </plugin>
+    <plugin name='rotors_gazebo_pressure_sensor_plugin' filename='librotors_gazebo_pressure_plugin.so'>
+      <robotNamespace>/</robotNamespace>
+      <linkName>//pressure_sensor_link</linkName>
+      <pressureTopic>gazebo/air_pressure</pressureTopic>
+      <rate>10</rate>
+      <referenceAltitude>500.0</referenceAltitude>
+      <pressureVariance>399.143626</pressureVariance>
+    </plugin>
+    <plugin name='lps_plugin' filename='librotors_gazebo_lps_plugin.so'>
+      <robotNamespace>/</robotNamespace>
+      <lpsStdDev>0.0</lpsStdDev>
+      <rate>100</rate>
+    </plugin>
+    <plugin name='crtp_interface' filename='libgazebo_crtp_interface.so'>
+      <robotNamespace>/</robotNamespace>
+      <imuSubTopic>gazebo/imu</imuSubTopic>
+      <magnetometerTopic>gazebo/magnetic_field</magnetometerTopic>
+      <pressureTopic>gazebo/air_pressure</pressureTopic>
+      <motorSpeedsPubTopic>gazebo/command/motor_speed</motorSpeedsPubTopic>
+      <crazyflieURI>INADDR_ANY://19950</crazyflieURI>
+      <rollTrim>0</rollTrim>
+      <pitchTrim>0</pitchTrim>
+      <enableLogging>true</enableLogging>
+      <useRosTime>true</useRosTime>
+      <enableLoggingImu>true</enableLoggingImu>
+      <enableLoggingTemperature>false</enableLoggingTemperature>
+      <enableLoggingMagneticField>false</enableLoggingMagneticField>
+      <enableLoggingPressure>false</enableLoggingPressure>
+      <enableLoggingBattery>false</enableLoggingBattery>
+      <enableLoggingPackets>false</enableLoggingPackets>
+      <enableParameters>true</enableParameters>
+      <rotorCount>4</rotorCount>
+    </plugin>
+    <static>0</static>
+    <plugin name='odometry_sensorgt' filename='librotors_gazebo_odometry_plugin.so'>
+      <linkName>/odometry_sensorgt_link</linkName>
+      <robotNamespace/>
+      <poseTopic>ground_thruth/pose</poseTopic>
+      <poseWithCovarianceTopic>ground_thruth/pose_with_covariance</poseWithCovarianceTopic>
+      <positionTopic>ground_thruth/position</positionTopic>
+      <transformTopic>ground_thruth/transform</transformTopic>
+      <odometryTopic>ground_thruth/odometry</odometryTopic>
+      <parentFrameId>world</parentFrameId>
+      <childFrameId>base_link</childFrameId>
+      <measurementDivisor>1</measurementDivisor>
+      <measurementDelay>0</measurementDelay>
+      <unknownDelay>0.0</unknownDelay>
+      <noiseNormalPosition>0 0 0</noiseNormalPosition>
+      <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+      <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+      <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+      <noiseUniformPosition>0 0 0</noiseUniformPosition>
+      <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+      <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+      <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+    </plugin>
+  </model>
+</sdf>

@@ -1,0 +1,103 @@
+ans =
+
+    'GYRO X Noise density : 9.991296e-05 [rad/$\sqrt{s}$]'
+
+
+ans =
+
+    'GYRO Y Noise density : 1.138328e-04 [rad/$\sqrt{s}$]'
+
+
+ans =
+
+    'GYRO Z Noise density : 9.094974e-05 [rad/$\sqrt{s}$]'
+
+
+ans =
+
+    'GYRO X Random Walk   : 2.053209e-06 [rad/s/$\sqrt{s}]'
+
+
+ans =
+
+    'GYRO Y Random Walk   : 8.349042e-06 [rad/s/$\sqrt{s}]'
+
+
+ans =
+
+    'GYRO Z Random Walk   : 3.423289e-06 [rad/s/$\sqrt{s}]'
+
+
+ans =
+
+    'ACC X Noise density : 1.519130e-03 [m/s2/$\sqrt{Hz}$]'
+
+
+ans =
+
+    'ACC Y Noise density : 1.511151e-03 [m/s2/$\sqrt{Hz}$]'
+
+
+ans =
+
+    'ACC Z Noise density : 2.387061e-03 [m/s2/$\sqrt{Hz}$]'
+
+
+ans =
+
+    'ACC X Random Walk   : 2.868893e-05 [m/s3/$\sqrt{Hz}$]'
+
+
+ans =
+
+    'ACC Y Random Walk   : 6.301817e-05 [m/s3/$\sqrt{Hz}$]'
+
+
+ans =
+
+    'ACC Z Random Walk   : 1.161717e-04 [m/s3/$\sqrt{Hz}$]'
+
+
+ans =
+
+    'mag x standard deviation : 7.07868618e-03 [gauss]'
+
+
+ans =
+
+    'mag y standard deviation : 6.73106045e-03 [gauss]'
+
+
+ans =
+
+    'mag z standard deviation : 7.28724033e-03 [gauss]'
+
+
+ans =
+
+    'baro variance : 3.99143626e-02 [mbar]'
+
+
+>> acc_noise_density
+
+acc_noise_density =
+
+    0.0032
+
+>> acc_random_walk
+
+acc_random_walk =
+
+   1.3524e-04
+
+>> gyro_noise_density
+
+gyro_noise_density =
+
+   1.7667e-04
+
+>> gyro_random_walk
+
+gyro_random_walk =
+
+   9.2542e-06
