@@ -98,7 +98,7 @@ namespace gazebo {
 		std::string crazyflie_uri_;
 		bool is_hitl_;
 		std::vector<crazyflie_gazebo::LogBlock> logBlock_;
-		Crazyradio::Ack ack_;
+		// Crazyradio::Ack ack_;
 		CrazyflieROS *cfROS_;
 
 		transport::NodePtr node_handle_;

@@ -137,7 +137,7 @@ void GazeboCRTPInterface::ImuCallback(ImuPtr& imu_msg){
 				 static_cast<int16_t>(imu_msg->angular_velocity().z()    	/	SENSORS_DEG_PER_LSB_CFG		/ DEG_TO_RAD_CF)}};
 
 	// gzmsg << " " << m_imu_info.acc.x << " ; "<< m_imu_info.acc.y << " ; " << m_imu_info.acc.z << std::endl;
-	cfROS_->sendSensorsPacket((const uint8_t*) &m_imu_info , sizeof(m_imu_info), ack_);
+	cfROS_->sendSensorsPacket((const uint8_t*) &m_imu_info , sizeof(m_imu_info));
 	// static int imu_msg_count = 0;
 	// if(imu_msg_count >= 1) {
 	// 	gzmsg << "{ "
@@ -165,7 +165,7 @@ void GazeboCRTPInterface::FluidPressureCallback(FluidPressurePtr& press_msg){
 		.temperature = static_cast<float>(temperature_at_altitude_kelvin - 273.15),
 		.asl = static_cast<float>(height_geometric_m)
 	};
-	cfROS_->sendSensorsPacket((const uint8_t*) &m_baro_info , sizeof(m_baro_info) , ack_);
+	cfROS_->sendSensorsPacket((const uint8_t*) &m_baro_info , sizeof(m_baro_info));
 	// static int press_msg_count = 0;
 	// if(press_msg_count >= 100) {
 	// 	gzmsg << "{ "
@@ -188,7 +188,7 @@ void GazeboCRTPInterface::MagneticFieldCallback(MagneticFieldPtr& mag_msg){
 				 static_cast<int16_t>(mag_msg->magnetic_field().y()   * 10000.0 *	MAG_GAUSS_PER_LSB),
 				 static_cast<int16_t>(mag_msg->magnetic_field().z()   *	10000.0 *	MAG_GAUSS_PER_LSB)}
 	};
-	cfROS_->sendSensorsPacket((const uint8_t*) &m_mag_info , sizeof(m_mag_info) , ack_);
+	cfROS_->sendSensorsPacket((const uint8_t*) &m_mag_info , sizeof(m_mag_info));
 	/*static int mag_msg_count = 0;
 	if(mag_msg_count >= 100) {
 		gzmsg << "{ "

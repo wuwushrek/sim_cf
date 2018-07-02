@@ -113,8 +113,7 @@ public:
 
 	void sendSensorsPacket(
 		const uint8_t* data,
-    	uint32_t length , 
-    	Crazyradio::Ack& ack);
+    	uint32_t length);
 
 	void sendExternalPositionUpdate(
 		float x,
@@ -294,9 +293,10 @@ private:
 	std::vector<ros::Publisher> m_pubLogDataGeneric;
 
 	bool m_sentSetpoint;
+	bool first_pos_sent;
 
-	std::atomic<bool> m_sentExternalImu;
-	std::atomic<bool> m_sentExternalPosition;
+	// std::atomic<bool> m_sentExternalImu;
+	// std::atomic<bool> m_sentExternalPosition;
 	std::atomic<bool> m_gyrobias_found;
 
 	std::thread m_thread;

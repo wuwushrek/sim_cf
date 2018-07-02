@@ -63,9 +63,10 @@ CrazyflieROS::CrazyflieROS(
 , m_pubBattery()
 , m_pubRssi()
 , m_sentSetpoint(false)
-, m_sentExternalPosition(false)
-, m_sentExternalImu(false)
+/*, m_sentExternalPosition(false)
+, m_sentExternalImu(false)*/
 , m_gyrobias_found(false)
+, first_pos_sent(false)
 {
   m_thread = std::thread(&CrazyflieROS::run, this);
 }
@@ -81,14 +82,13 @@ void CrazyflieROS::setOnMotorsData(std::function<void(const crtpMotorsDataRespon
   m_cf.setMotorsCallback(cb);
 }
 
-void CrazyflieROS::sendSensorsPacket(const uint8_t* data, uint32_t length, Crazyradio::Ack& ack){
-  m_cf.sendPacket(data , length , ack);
-  m_sentExternalImu.store(true);
+void CrazyflieROS::sendSensorsPacket(const uint8_t* data, uint32_t length){
+  m_cf.sendPacketNoAck(data , length);
+  // m_sentExternalImu.store(true);
 }
 
 void CrazyflieROS::sendExternalPositionUpdate(float x , float y , float z){
-  static bool first_sent_pos = false;
-  if ((!first_sent_pos) && m_gyrobias_found.load()){
+  if ((!first_pos_sent) && m_gyrobias_found.load()){
     // declare kalman parameters
     std::string kalman_initX = "/" + m_tf_prefix + "/kalman/initialX";
     std::string kalman_initY = "/" + m_tf_prefix + "/kalman/initialY";
@@ -109,18 +109,18 @@ void CrazyflieROS::sendExternalPositionUpdate(float x , float y , float z){
     updateParam<float , float>(entry_initX->id , kalman_initX);
     updateParam<float , float>(entry_initY->id , kalman_initY);
     updateParam<float , float>(entry_initZ->id , kalman_initZ);
-    ros::Duration(2.0).sleep(); // lazy trick to wait enough for the params to init
+    ros::Duration(1.0).sleep(); // lazy trick to wait enough for the params to init
 
     ros::param::set(reset_estim , 1);
     updateParam<uint8_t , int>(entry_resetEstim->id , reset_estim);
-    ros::Duration(8.0).sleep(); // lazy trick to avoid restart of cf2 in hitl
+    ros::Duration(1.0).sleep(); // lazy trick to avoid restart of cf2 in hitl
 
     ROS_INFO("RESET OF KALMAN DONE !");
-    first_sent_pos = true;
+    first_pos_sent = true;
   }
-  if (first_sent_pos){
+  if (first_pos_sent){
     m_cf.sendExternalPositionUpdate(x,y,z);
-    m_sentExternalPosition.store(true);
+    // m_sentExternalPosition.store(true);
   }
 }
 
@@ -321,7 +321,7 @@ void CrazyflieROS::run()
   ros::NodeHandle n;
   n.setCallbackQueue(&m_callback_queue);
 
-  // solve LIBUSB_ERROR_TIMEOUT by trying to poll params info
+  // solve LIBUSB_ERROR_TIMEOUT always on the first call
   try {
     m_cf.requestParamToc();
   } catch (std::runtime_error& e){
@@ -584,21 +584,28 @@ void CrazyflieROS::run()
    Crazyradio::Ack ack;
 
    while(!m_isEmergency) {
+    if (m_cf.isSITLsim() && m_enableLogging){
+      m_cf.transmitPackets();
+      m_cf.recvPacket(ack);
+      if(m_enable_logging_packets) {
+        this->publishPackets();
+      }
+    }else if (!m_cf.isSITLsim() && m_enableLogging  && !m_sentSetpoint){
       // make sure we ping often enough to stream data out
-    if (m_enableLogging && !m_sentExternalImu.load() && !m_sentSetpoint && !m_sentExternalPosition.load()) {
       m_cf.transmitPackets();
       m_cf.sendPing();
       if(m_enable_logging_packets) {
         this->publishPackets();
       }
+      m_sentSetpoint = false;
     }
-    m_sentSetpoint = false;
-    m_sentExternalPosition.store(false);
-    m_sentExternalImu.store(false);
 
-      // Execute any ROS related functions now
+    // Execute any ROS related functions now
     m_callback_queue.callAvailable(ros::WallDuration(0.0));
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    // In case of SITL, no need delay since the delay is done when doing recvPacket
+    if (!m_cf.isSITLsim())
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
     // Make sure we turn the engines off
