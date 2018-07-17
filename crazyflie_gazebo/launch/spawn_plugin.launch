@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="plugin_name" default="cfHandler"/>
+  <arg name="model" default="$(find crazyflie_gazebo)/models/rotors_description/urdf/cfHandler_base.xacro"/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.3"/>
+  <arg name="rotors_description_dir" default="$(find crazyflie_gazebo)/models/rotors_description"/>
+
+  <arg name="enable_logging" default="true" />
+  <arg name="enable_parameters" default="true" />
+  <arg name="use_ros_time" default="true" />
+  <arg name="enable_logging_imu" default="true" />
+  <arg name="enable_logging_temperature" default="false" />
+  <arg name="enable_logging_magnetic_field" default="false" />
+  <arg name="enable_logging_pressure" default="false" />
+  <arg name="enable_logging_battery" default="false" />
+  <arg name="enable_logging_packets" default="false" />
+  <arg name="nbQuads" default="1" />
+  <arg name="cfPrefix" default="cf" />
+  <arg name="udpPort" default="19950" />
+
+
+
+  <!-- send the robot XML to param server -->
+  <param name="robot_description" command="
+    $(find xacro)/xacro '$(arg model)'
+    rotors_description_dir:=$(arg rotors_description_dir)
+    enable_logging:=$(arg enable_logging)
+    enable_parameters:=$(arg enable_parameters)
+    use_ros_time:=$(arg use_ros_time)
+    enable_logging_imu:=$(arg enable_logging_imu)
+    enable_logging_magnetic_field:=$(arg enable_logging_magnetic_field)
+    enable_logging_temperature:=$(arg enable_logging_temperature)
+    enable_logging_pressure:=$(arg enable_logging_pressure)
+    enable_logging_battery:=$(arg enable_logging_battery)
+    enable_logging_packets:=$(arg enable_logging_packets)
+    nbQuads:=$(arg nbQuads)
+    cfPrefix:=$(arg cfPrefix)
+    udpPort:=$(arg udpPort) "
+  />
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_$(arg plugin_name)" pkg="gazebo_ros" type="spawn_model"
+   args="-param robot_description
+         -urdf
+         -x $(arg x)
+         -y $(arg y)
+         -z $(arg z)
+         -model $(arg plugin_name)"
+   respawn="false" output="screen">
+  </node>
+</launch>
