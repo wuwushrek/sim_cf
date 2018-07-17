@@ -309,12 +309,12 @@ void GazeboWindPlugin::CreatePubsAndSubs() {
   // ========= WRENCH STAMPED MSG SETUP ========= //
   // ============================================ //
   wind_force_pub_ = node_handle_->Advertise<gz_geometry_msgs::WrenchStamped>(
-      "~/" + namespace_ + "/" + wind_force_pub_topic_, 1);
+      model_->GetName() + "/" + wind_force_pub_topic_, 1);
 
   // connect_gazebo_to_ros_topic_msg.set_gazebo_namespace(namespace_);
-  connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + namespace_ + "/" +
+  connect_gazebo_to_ros_topic_msg.set_gazebo_topic(model_->GetName() + "/" +
                                                    wind_force_pub_topic_);
-  connect_gazebo_to_ros_topic_msg.set_ros_topic(namespace_ + "/" +
+  connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
                                                 wind_force_pub_topic_);
   connect_gazebo_to_ros_topic_msg.set_msgtype(
       gz_std_msgs::ConnectGazeboToRosTopic::WRENCH_STAMPED);
@@ -325,11 +325,11 @@ void GazeboWindPlugin::CreatePubsAndSubs() {
   // ========== WIND SPEED MSG SETUP ============ //
   // ============================================ //
   wind_speed_pub_ = node_handle_->Advertise<gz_mav_msgs::WindSpeed>(
-      "~/" + namespace_ + "/" + wind_speed_pub_topic_, 1);
+      model_->GetName() + "/" + wind_speed_pub_topic_, 1);
 
-  connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + namespace_ + "/" +
+  connect_gazebo_to_ros_topic_msg.set_gazebo_topic(model_->GetName() + "/" +
                                                    wind_speed_pub_topic_);
-  connect_gazebo_to_ros_topic_msg.set_ros_topic(namespace_ + "/" +
+  connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
                                                 wind_speed_pub_topic_);
   connect_gazebo_to_ros_topic_msg.set_msgtype(
       gz_std_msgs::ConnectGazeboToRosTopic::WIND_SPEED);

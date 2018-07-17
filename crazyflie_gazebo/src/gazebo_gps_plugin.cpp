@@ -92,8 +92,8 @@ void GpsPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   gravity_W_ = world_->Gravity();
 
-  gps_pub_ = node_handle_->Advertise<gz_gps_msgs::SITLGps>("~/" + model_->GetName() + "/gps", 10);
-  gt_pub_ = node_handle_->Advertise<gz_gps_msgs::Groundtruth>("~/" + model_->GetName() + "/groundtruth", 10);
+  gps_pub_ = node_handle_->Advertise<gz_gps_msgs::SITLGps>(model_->GetName() + "/gps", 10);
+  gt_pub_ = node_handle_->Advertise<gz_gps_msgs::Groundtruth>(model_->GetName() + "/groundtruth", 10);
 }
 
 void GpsPlugin::OnUpdate(const common::UpdateInfo&){

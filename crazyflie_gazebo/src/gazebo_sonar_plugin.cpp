@@ -91,7 +91,7 @@ void SonarPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 #else
   const string scopedName = _parent->GetParentName();
 #endif
-  string topicName = "~/" + scopedName + "/sonar";
+  string topicName = scopedName + "/sonar";
   boost::replace_all(topicName, "::", "/");
 
 

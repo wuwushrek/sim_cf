@@ -49,20 +49,20 @@ void GazeboCRTPInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
 
 	// gazebo publisher and subscriber setup
 	gzdbg << "Creating Gazebo subscriber on topic \"" << "~/" + model_->GetName() + "/" + imu_sub_topic_ << "\"." << std::endl;
-	imu_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + "/" + imu_sub_topic_, &GazeboCRTPInterface::ImuCallback, this);
+	imu_sub_ = node_handle_->Subscribe(model_->GetName() + "/" + imu_sub_topic_, &GazeboCRTPInterface::ImuCallback, this);
 
 	gzdbg << "Creating Gazebo subscriber on topic \"" << "~/" + model_->GetName() + "/" + magnetic_field_sub_topic_ << "\"." << std::endl;
-	magnetic_field_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + "/" + magnetic_field_sub_topic_, &GazeboCRTPInterface::MagneticFieldCallback, this);
+	magnetic_field_sub_ = node_handle_->Subscribe(model_->GetName() + "/" + magnetic_field_sub_topic_, &GazeboCRTPInterface::MagneticFieldCallback, this);
 
 	gzdbg << "Creating Gazebo subscriber on topic \"" << "~/" + model_->GetName() + "/" + fluid_pressure_sub_topic_ << "\"." << std::endl;
-	fluid_pressure_sub_ = node_handle_->Subscribe("~/" + model_->GetName() +  "/" + fluid_pressure_sub_topic_, &GazeboCRTPInterface::FluidPressureCallback, this);
+	fluid_pressure_sub_ = node_handle_->Subscribe(model_->GetName() +  "/" + fluid_pressure_sub_topic_, &GazeboCRTPInterface::FluidPressureCallback, this);
 	
 	gzdbg << "Creating Gazebo subscriber on topic \"" << "~/" + model_->GetName() + "/" + lps_sub_topic_ << "\"." << std::endl;
-	lps_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + "/"+ lps_sub_topic_ , &GazeboCRTPInterface::LpsCallback, this);
+	lps_sub_ = node_handle_->Subscribe(model_->GetName() + "/"+ lps_sub_topic_ , &GazeboCRTPInterface::LpsCallback, this);
 
 	// Publish gazebo's motor_speed message
 	gzdbg << "Creating Gazebo publisher on topic \"" << "~/" + model_->GetName() + "/" + motor_velocity_reference_pub_topic_ << "\"." << std::endl;
-	motor_velocity_reference_pub_ = node_handle_->Advertise<gz_mav_msgs::CommandMotorSpeed>("~/" + model_->GetName() + "/" + motor_velocity_reference_pub_topic_, 1);
+	motor_velocity_reference_pub_ = node_handle_->Advertise<gz_mav_msgs::CommandMotorSpeed>(model_->GetName() + "/" + motor_velocity_reference_pub_topic_, 1);
 
 	// Initialize crazyflie interface
 	getSdfParam<std::string>(_sdf, "crazyflieURI", crazyflie_uri_, crazyflie_uri_);
@@ -137,7 +137,7 @@ void GazeboCRTPInterface::ImuCallback(ImuPtr& imu_msg){
 				 static_cast<int16_t>(imu_msg->angular_velocity().z()    	/	SENSORS_DEG_PER_LSB_CFG		/ DEG_TO_RAD_CF)}};
 
 	// gzmsg << " " << m_imu_info.acc.x << " ; "<< m_imu_info.acc.y << " ; " << m_imu_info.acc.z << std::endl;
-	cfROS_->sendSensorsPacket((const uint8_t*) &m_imu_info , sizeof(m_imu_info), ack_);
+	cfROS_->sendSensorsPacket((const uint8_t*) &m_imu_info , sizeof(m_imu_info));
 	// static int imu_msg_count = 0;
 	// if(imu_msg_count >= 1) {
 	// 	gzmsg << "{ "
@@ -165,7 +165,7 @@ void GazeboCRTPInterface::FluidPressureCallback(FluidPressurePtr& press_msg){
 		.temperature = static_cast<float>(temperature_at_altitude_kelvin - 273.15),
 		.asl = static_cast<float>(height_geometric_m)
 	};
-	cfROS_->sendSensorsPacket((const uint8_t*) &m_baro_info , sizeof(m_baro_info) , ack_);
+	cfROS_->sendSensorsPacket((const uint8_t*) &m_baro_info , sizeof(m_baro_info));
 	// static int press_msg_count = 0;
 	// if(press_msg_count >= 100) {
 	// 	gzmsg << "{ "
@@ -188,7 +188,7 @@ void GazeboCRTPInterface::MagneticFieldCallback(MagneticFieldPtr& mag_msg){
 				 static_cast<int16_t>(mag_msg->magnetic_field().y()   * 10000.0 *	MAG_GAUSS_PER_LSB),
 				 static_cast<int16_t>(mag_msg->magnetic_field().z()   *	10000.0 *	MAG_GAUSS_PER_LSB)}
 	};
-	cfROS_->sendSensorsPacket((const uint8_t*) &m_mag_info , sizeof(m_mag_info) , ack_);
+	cfROS_->sendSensorsPacket((const uint8_t*) &m_mag_info , sizeof(m_mag_info));
 	/*static int mag_msg_count = 0;
 	if(mag_msg_count >= 100) {
 		gzmsg << "{ "
