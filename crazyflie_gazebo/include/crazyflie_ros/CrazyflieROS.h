@@ -94,11 +94,45 @@ public:
 		bool enable_logging_battery,
 		bool enable_logging_packets);
 
+/*************** Additions/Modifications for Simulation ****************/
+	CrazyflieROS(
+		const std::string& tf_prefix,
+		bool enable_logging,
+		bool enable_parameters,
+		bool use_ros_time,
+		bool enable_logging_imu,
+		bool enable_logging_temperature,
+		bool enable_logging_magnetic_field,
+		bool enable_logging_pressure,
+		bool enable_logging_battery,
+		bool enable_logging_packets,
+		std::function<void(const uint8_t* , uint32_t)> sendDataFunc,
+		std::function<void(Crazyradio::Ack &, int64_t)> recvDataFunc);
+
+	void setOnMotorsData(std::function<void(const crtpMotorsDataResponse*)> cb);
+
+	void sendSensorsPacket(
+		const uint8_t* data,
+		uint32_t length);
+
+	void sendExternalPositionUpdate(
+		float x,
+		float y,
+		float z);
+
+	/* Initialization process of ROS routines */
+	void initalizeRosRoutines(ros::NodeHandle &n);
+
+	/* Update steps --> Action to be done at every iteration */
+	void updateInformation();
+
+	/* Reset kalman filter when first gyro bias found is received */
+	void resetKalmanFilter();
+
+/***********************************************************************/
 	~CrazyflieROS();
 
 	void stop();
-
-	void setOnMotorsData(std::function<void(const crtpMotorsDataResponse*)> cb);
 
 	/**
 	* Service callback which transmits a packet to the crazyflie
@@ -109,17 +143,6 @@ public:
 	bool sendPacket (
 		crazyflie_gazebo::sendPacket::Request &req,
 		crazyflie_gazebo::sendPacket::Response &res);
-
-
-	void sendSensorsPacket(
-		const uint8_t* data,
-    	uint32_t length , 
-    	Crazyradio::Ack& ack);
-
-	void sendExternalPositionUpdate(
-		float x,
-		float y,
-		float z);
 
 private:
 	ros::ServiceServer m_sendPacketServer;
@@ -139,7 +162,8 @@ private:
 		float gyro_z;
 	} __attribute__((packed));
 
-	struct logStats {
+/*************** Additions/Modifications for Simulation ****************/
+	struct logLinkStats {
 		uint16_t rxRate;
 		uint16_t rxDrpRte;
 		uint16_t txRate;
@@ -153,7 +177,7 @@ private:
 		float pitch;
 		float yaw;
 	} __attribute__((packed));
-
+/***********************************************************************/
 	struct log2 {
 		float mag_x;
 		float mag_y;
@@ -207,15 +231,17 @@ private:
 
 	void onLogCustom(uint32_t time_in_ms, std::vector<double>* values, void* userData);
 
-	void onLogStatData(uint32_t time_in_ms, logStats* data);
+/*************** Additions/Modifications for Simulation ****************/
+	void onLogLinkStatsData(uint32_t time_in_ms, logLinkStats* data);
+
+	void onImuSimDataResponse(const crtpImuSimDataResponse* data);
 
 	void onLogStateData(uint32_t time_in_ms, logState* data);
+/**********************************************************************/
 
 	void onEmptyAck(const crtpPlatformRSSIAck* data);
 
 	void onLinkQuality(float linkQuality);
-
-	void onImuSimDataResponse(const crtpImuSimDataResponse* data);
 
 	void onConsole(const char* msg) ;
 
@@ -294,10 +320,18 @@ private:
 	std::vector<ros::Publisher> m_pubLogDataGeneric;
 
 	bool m_sentSetpoint;
+	bool m_sentExternalPosition;
+/*************** Additions/Modifications for Simulation ****************/
+	std::unique_ptr<LogBlock<logImu> > logBlockImu;
+	std::unique_ptr<LogBlock<log2> > logBlock2;
+	std::unique_ptr<LogBlock<logLinkStats> > logStatsData;
+	std::unique_ptr<LogBlock<logState> > logStateData;
 
-	std::atomic<bool> m_sentExternalImu;
-	std::atomic<bool> m_sentExternalPosition;
-	std::atomic<bool> m_gyrobias_found;
+	bool first_pos_sent;
+	bool m_gyrobias_found;
+
+	float x_init , y_init ,z_init;
+/***********************************************************************/
 
 	std::thread m_thread;
 	ros::CallbackQueue m_callback_queue;

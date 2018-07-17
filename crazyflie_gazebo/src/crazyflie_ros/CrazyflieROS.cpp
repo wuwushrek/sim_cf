@@ -64,31 +64,81 @@ CrazyflieROS::CrazyflieROS(
 , m_pubRssi()
 , m_sentSetpoint(false)
 , m_sentExternalPosition(false)
-, m_sentExternalImu(false)
 , m_gyrobias_found(false)
+, first_pos_sent(false)
 {
   m_thread = std::thread(&CrazyflieROS::run, this);
 }
 
-CrazyflieROS::~CrazyflieROS(){
-  m_cf.reboot();
-  m_isEmergency = true;
-  m_thread.join();
-  ROS_INFO("Delete CrazyflieROS Instance");
+/*************** Additions/Modifications for Simulation ****************/
+CrazyflieROS::CrazyflieROS(
+  const std::string& tf_prefix,
+  bool enable_logging,
+  bool enable_parameters,
+  bool use_ros_time,
+  bool enable_logging_imu,
+  bool enable_logging_temperature,
+  bool enable_logging_magnetic_field,
+  bool enable_logging_pressure,
+  bool enable_logging_battery,
+  bool enable_logging_packets,
+  std::function<void(const uint8_t* , uint32_t)> sendDataFunc,
+  std::function<void(Crazyradio::Ack &, int64_t)> recvDataFunc)
+: m_cf(sendDataFunc, recvDataFunc , rosLogger)
+, m_tf_prefix(tf_prefix)
+, m_isEmergency(false)
+, m_roll_trim(0)
+, m_pitch_trim(0)
+, m_enableLogging(enable_logging)
+, m_enableParameters(enable_parameters)
+, m_logBlocks()
+, m_use_ros_time(use_ros_time)
+, m_enable_logging_imu(enable_logging_imu)
+, m_enable_logging_temperature(enable_logging_temperature)
+, m_enable_logging_magnetic_field(enable_logging_magnetic_field)
+, m_enable_logging_pressure(enable_logging_pressure)
+, m_enable_logging_battery(enable_logging_battery)
+, m_enable_logging_packets(enable_logging_packets)
+, m_serviceEmergency()
+, m_serviceUpdateParams()
+, m_serviceSetGroupMask()
+, m_serviceTakeoff()
+, m_serviceLand()
+, m_serviceStop()
+, m_serviceGoTo()
+, m_serviceUploadTrajectory()
+, m_serviceStartTrajectory()
+, m_subscribeCmdVel()
+, m_subscribeCmdFullState()
+, m_subscribeCmdHover()
+, m_subscribeCmdStop()
+, m_subscribeCmdPosition()
+, m_subscribeExternalPosition()
+, m_pubImu()
+, m_pubTemp()
+, m_pubMag()
+, m_pubPressure()
+, m_pubBattery()
+, m_pubRssi()
+, m_sentSetpoint(false)
+, m_sentExternalPosition(false)
+, first_pos_sent(false)
+, m_gyrobias_found(false)
+{
+  // initalizeRosRoutines();
 }
 
 void CrazyflieROS::setOnMotorsData(std::function<void(const crtpMotorsDataResponse*)> cb){
   m_cf.setMotorsCallback(cb);
 }
 
-void CrazyflieROS::sendSensorsPacket(const uint8_t* data, uint32_t length, Crazyradio::Ack& ack){
-  m_cf.sendPacket(data , length , ack);
-  m_sentExternalImu.store(true);
+void CrazyflieROS::sendSensorsPacket(const uint8_t* data, uint32_t length){
+  m_cf.sendPacketNoAck(data , length);
 }
 
-void CrazyflieROS::sendExternalPositionUpdate(float x , float y , float z){
-  static bool first_sent_pos = false;
-  if ((!first_sent_pos) && m_gyrobias_found.load()){
+void CrazyflieROS::resetKalmanFilter()
+{
+  if ((!first_pos_sent) && m_gyrobias_found){
     // declare kalman parameters
     std::string kalman_initX = "/" + m_tf_prefix + "/kalman/initialX";
     std::string kalman_initY = "/" + m_tf_prefix + "/kalman/initialY";
@@ -101,234 +151,53 @@ void CrazyflieROS::sendExternalPositionUpdate(float x , float y , float z){
     auto entry_initY = m_cf.getParamTocEntry("kalman" , "initialY");
     auto entry_initZ = m_cf.getParamTocEntry("kalman" , "initialZ");
 
-    ros::param::set(kalman_initX , x);
-    ros::param::set(kalman_initY , y);
-    ros::param::set(kalman_initZ , z);
+    ros::param::set(kalman_initX , x_init);
+    ros::param::set(kalman_initY , y_init);
+    ros::param::set(kalman_initZ , z_init);
 
     // update initial position
     updateParam<float , float>(entry_initX->id , kalman_initX);
     updateParam<float , float>(entry_initY->id , kalman_initY);
     updateParam<float , float>(entry_initZ->id , kalman_initZ);
-    ros::Duration(2.0).sleep(); // lazy trick to wait enough for the params to init
+    ros::Duration(0.5).sleep(); // lazy trick to wait enough for the params to init
 
     ros::param::set(reset_estim , 1);
     updateParam<uint8_t , int>(entry_resetEstim->id , reset_estim);
-    ros::Duration(8.0).sleep(); // lazy trick to avoid restart of cf2 in hitl
+    ros::Duration(0.5).sleep(); // lazy trick to avoid restart of cf2 in hitl
 
-    ROS_INFO("RESET OF KALMAN DONE !");
-    first_sent_pos = true;
-  }
-  if (first_sent_pos){
-    m_cf.sendExternalPositionUpdate(x,y,z);
-    m_sentExternalPosition.store(true);
+    ROS_INFO("[%s] RESET OF KALMAN DONE !" , m_tf_prefix.c_str());
+    first_pos_sent = true;
   }
 }
 
-void CrazyflieROS::stop()
-{
-  ROS_INFO("Disconnecting ...");
-  m_isEmergency = true;
-  m_thread.join();
-}
-
-bool CrazyflieROS::sendPacket (
-  crazyflie_gazebo::sendPacket::Request &req,
-  crazyflie_gazebo::sendPacket::Response &res)
-{
-    /** Convert the message struct to the packet struct */
-  crtpPacket_t packet;
-  packet.size = req.packet.size;
-  packet.header = req.packet.header;
-  for (int i = 0; i < CRTP_MAX_DATA_SIZE; i++) {
-    packet.data[i] = req.packet.data[i];
-  }
-  m_cf.queueOutgoingPacket(packet);
-  return true;
-}
-
-void CrazyflieROS::publishPackets() {
-  std::vector<Crazyradio::Ack> packets = m_cf.retrieveGenericPackets();
-  if (!packets.empty())
-  {
-    std::vector<Crazyradio::Ack>::iterator it;
-    for (it = packets.begin(); it != packets.end(); it++)
-    {
-      crazyflie_gazebo::crtpPacket packet;
-      packet.size = it->size;
-      packet.header = it->data[0];
-      for(int i = 0; i < packet.size; i++)
-      {
-        packet.data[i] = it->data[i+1];
-      }
-      m_pubPackets.publish(packet);
-    }
+void CrazyflieROS::sendExternalPositionUpdate(float x , float y , float z){
+  if (m_cf.isSim() && first_pos_sent){
+    m_cf.sendExternalPositionUpdate(x,y,z); // Send with no ack message in SITL
+    m_sentExternalPosition = false;
+  }else if (m_cf.isSim()){
+    x_init = x;
+    y_init = y;
+    z_init = z;
+  }else {
+    m_cf.sendExternalPositionUpdate(x , y , z);
+    m_sentExternalPosition = true;
   }
 }
 
-bool CrazyflieROS::emergency(
-  std_srvs::Empty::Request& req,
-  std_srvs::Empty::Response& res)
+/* Initialization process of ROS routines */
+void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
 {
-  ROS_FATAL("Emergency requested!");
-  m_isEmergency = true;
-
-  return true;
-}
-
-
-void CrazyflieROS::cmdHoverSetpoint(
-  const crazyflie_gazebo::Hover::ConstPtr& msg)
-{
-     //ROS_INFO("got a hover setpoint");
-  if (!m_isEmergency) {
-    float vx = msg->vx;
-    float vy = msg->vy;
-    float yawRate = msg->yawrate;
-    float zDistance = msg->zDistance;
-
-    m_cf.sendHoverSetpoint(vx, vy, yawRate, zDistance);
-    m_sentSetpoint = true;
-      //ROS_INFO("set a hover setpoint");
-  }
-}
-
-void CrazyflieROS::cmdStop(
-  const std_msgs::Empty::ConstPtr& msg)
-{
-     //ROS_INFO("got a stop setpoint");
-  if (!m_isEmergency) {
-    m_cf.sendStop();
-    m_sentSetpoint = true;
-      //ROS_INFO("set a stop setpoint");
-  }
-}
-
-void CrazyflieROS::cmdPositionSetpoint(
-  const crazyflie_gazebo::Position::ConstPtr& msg)
-{
-  if(!m_isEmergency) {
-    float x = msg->x;
-    float y = msg->y;
-    float z = msg->z;
-    float yaw = msg->yaw;
-
-    m_cf.sendPositionSetpoint(x, y, z, yaw);
-    m_sentSetpoint = true;
-  }
-}
-
-bool CrazyflieROS::updateParams(
-  crazyflie_gazebo::UpdateParams::Request& req,
-  crazyflie_gazebo::UpdateParams::Response& res)
-{
-  ROS_INFO("Update parameters");
-  for (auto&& p : req.params) {
-    std::string ros_param = "/" + m_tf_prefix + "/" + p;
-    size_t pos = p.find("/");
-    std::string group(p.begin(), p.begin() + pos);
-    std::string name(p.begin() + pos + 1, p.end());
-
-    auto entry = m_cf.getParamTocEntry(group, name);
-    if (entry)
-    {
-      switch (entry->type) {
-        case Crazyflie::ParamTypeUint8:
-        updateParam<uint8_t, int>(entry->id, ros_param);
-        break;
-        case Crazyflie::ParamTypeInt8:
-        updateParam<int8_t, int>(entry->id, ros_param);
-        break;
-        case Crazyflie::ParamTypeUint16:
-        updateParam<uint16_t, int>(entry->id, ros_param);
-        break;
-        case Crazyflie::ParamTypeInt16:
-        updateParam<int16_t, int>(entry->id, ros_param);
-        break;
-        case Crazyflie::ParamTypeUint32:
-        updateParam<uint32_t, int>(entry->id, ros_param);
-        break;
-        case Crazyflie::ParamTypeInt32:
-        updateParam<int32_t, int>(entry->id, ros_param);
-        break;
-        case Crazyflie::ParamTypeFloat:
-        updateParam<float, float>(entry->id, ros_param);
-        break;
-      }
-    }
-    else {
-      ROS_ERROR("Could not find param %s/%s", group.c_str(), name.c_str());
-    }
-  }
-  return true;
-}
-
-void CrazyflieROS::cmdVelChanged(
-  const geometry_msgs::Twist::ConstPtr& msg)
-{
-  if (!m_isEmergency) {
-    float roll = msg->linear.y + m_roll_trim;
-    float pitch = - (msg->linear.x + m_pitch_trim);
-    float yawrate = msg->angular.z;
-    uint16_t thrust = std::min<uint16_t>(std::max<float>(msg->linear.z, 0.0), 60000);
-
-    m_cf.sendSetpoint(roll, pitch, yawrate, thrust);
-    m_sentSetpoint = true;
-  }
-}
-
-void CrazyflieROS::cmdFullStateSetpoint(
-  const crazyflie_gazebo::FullState::ConstPtr& msg)
-{
-    //ROS_INFO("got a full state setpoint");
-  if (!m_isEmergency) {
-    float x = msg->pose.position.x;
-    float y = msg->pose.position.y;
-    float z = msg->pose.position.z;
-    float vx = msg->twist.linear.x;
-    float vy = msg->twist.linear.y;
-    float vz = msg->twist.linear.z;
-    float ax = msg->acc.x;
-    float ay = msg->acc.y;
-    float az = msg->acc.z;
-
-    float qx = msg->pose.orientation.x;
-    float qy = msg->pose.orientation.y;
-    float qz = msg->pose.orientation.z;
-    float qw = msg->pose.orientation.w;
-    float rollRate = msg->twist.angular.x;
-    float pitchRate = msg->twist.angular.y;
-    float yawRate = msg->twist.angular.z;
-
-    m_cf.sendFullStateSetpoint(
-      x, y, z,
-      vx, vy, vz,
-      ax, ay, az,
-      qx, qy, qz, qw,
-      rollRate, pitchRate, yawRate);
-    m_sentSetpoint = true;
-      //ROS_INFO("set a full state setpoint");
-  }
-}
-
-void CrazyflieROS::positionMeasurementChanged(
-  const geometry_msgs::PointStamped::ConstPtr& msg)
-{
-  sendExternalPositionUpdate(msg->point.x, msg->point.y, msg->point.z);
-}
-
-void CrazyflieROS::run()
-{
-  ros::NodeHandle n;
-  n.setCallbackQueue(&m_callback_queue);
+  //ros::NodeHandle n;
+  //n.setCallbackQueue(&m_callback_queue);
 
   // solve LIBUSB_ERROR_TIMEOUT by trying to poll params info
   try {
     m_cf.requestParamToc();
   } catch (std::runtime_error& e){
-    ROS_INFO("Runtime Error catched : %s" , e.what());
+    ROS_INFO("[%s] Runtime Error catched : %s" , m_tf_prefix.c_str() , e.what());
   }
 
-  ROS_INFO("Creating CrazyflieROS services ");
+  ROS_INFO("[%s] Creating CrazyflieROS services " , m_tf_prefix.c_str());
 
   m_subscribeCmdVel = n.subscribe(m_tf_prefix + "/cmd_vel", 1, &CrazyflieROS::cmdVelChanged, this);
   m_subscribeCmdFullState = n.subscribe(m_tf_prefix + "/cmd_full_state", 1, &CrazyflieROS::cmdFullStateSetpoint, this);
@@ -347,15 +216,6 @@ void CrazyflieROS::run()
   m_serviceGoTo = n.advertiseService(m_tf_prefix + "/go_to", &CrazyflieROS::goTo, this);
   m_serviceUploadTrajectory = n.advertiseService(m_tf_prefix + "/upload_trajectory", &CrazyflieROS::uploadTrajectory, this);
   m_serviceStartTrajectory = n.advertiseService(m_tf_prefix + "/start_trajectory", &CrazyflieROS::startTrajectory, this);
-
-  ROS_INFO("Enable logging : %s", m_enableLogging ? "TRUE" : "FALSE");
-  ROS_INFO("Enable logging imu : %s", m_enable_logging_imu ? "TRUE" : "FALSE");
-  ROS_INFO("Enable logging Temperature : %s", m_enable_logging_temperature ? "TRUE" : "FALSE");
-  ROS_INFO("Enable logging mag field : %s", m_enable_logging_magnetic_field ? "TRUE" : "FALSE");
-  ROS_INFO("Enable logging pressure : %s", m_enable_logging_pressure ? "TRUE" : "FALSE");
-  ROS_INFO("Enable logging battery : %s", m_enable_logging_battery ? "TRUE" : "FALSE");
-  ROS_INFO("Enable logging packets : %s", m_enable_logging_packets ? "TRUE" : "FALSE");
-  ROS_INFO("Enable parameters : %s", m_enableParameters ? "TRUE" : "FALSE");
 
   if (m_enable_logging_imu) {
     m_pubImu = n.advertise<sensor_msgs::Imu>(m_tf_prefix + "/imu", 10);
@@ -401,7 +261,7 @@ void CrazyflieROS::run()
 
   if (m_enableParameters)
   {
-    ROS_INFO("Requesting parameters...");
+    ROS_INFO("[%s] Requesting parameters...", m_tf_prefix.c_str());
     m_cf.requestParamToc();
     for (auto iter = m_cf.paramsBegin(); iter != m_cf.paramsEnd(); ++iter) {
       auto entry = *iter;
@@ -439,11 +299,6 @@ void CrazyflieROS::run()
     }
     m_serviceUpdateParams = n.advertiseService(m_tf_prefix + "/update_params", &CrazyflieROS::updateParams, this);
   }
-
-  std::unique_ptr<LogBlock<logImu> > logBlockImu;
-  std::unique_ptr<LogBlock<log2> > logBlock2;
-  std::unique_ptr<LogBlock<logStats> > logStatsData;
-  std::unique_ptr<LogBlock<logState> > logStateData;
 
   std::vector<std::unique_ptr<LogBlockGeneric> > logBlocksGeneric(m_logBlocks.size());
   if (m_enableLogging) {
@@ -522,9 +377,9 @@ void CrazyflieROS::run()
       }
 
       /* Print Receive - Drop - Transmit Rate */
-      /*
-      std::function<void(uint32_t, logStats*)> cbStats = std::bind(&CrazyflieROS::onLogStatData, this, std::placeholders::_1, std::placeholders::_2);
-      logStatsData.reset(new LogBlock<logStats>(
+      
+      /*std::function<void(uint32_t, logLinkStats*)> cbStats = std::bind(&CrazyflieROS::onLogLinkStatsData, this, std::placeholders::_1, std::placeholders::_2);
+      logStatsData.reset(new LogBlock<logLinkStats>(
         &m_cf,{
           {"crtp", "rxRate"},
           {"crtp", "rxDrpRte"},
@@ -532,7 +387,7 @@ void CrazyflieROS::run()
         }, cbStats));
       logStatsData->start(200);*/
 
-      std::function<void(uint32_t, logState*)> cbQuadState = std::bind(&CrazyflieROS::onLogStateData, this, std::placeholders::_1, std::placeholders::_2);
+      /*std::function<void(uint32_t, logState*)> cbQuadState = std::bind(&CrazyflieROS::onLogStateData, this, std::placeholders::_1, std::placeholders::_2);
       logStateData.reset(new LogBlock<logState>(
         &m_cf,{
           {"stateEstimate", "x"},
@@ -542,7 +397,7 @@ void CrazyflieROS::run()
           {"stabilizer", "pitch"},
           {"stabilizer", "yaw"},
         }, cbQuadState));
-      logStateData->start(1);
+      logStateData->start(1);*/
 
       // custom log blocks
       size_t i = 0;
@@ -568,43 +423,259 @@ void CrazyflieROS::run()
 
     }
 
-    ROS_INFO("Requesting memories...");
+    ROS_INFO("[%s] Requesting memories...", m_tf_prefix.c_str());
     m_cf.requestMemoryToc();
 
-    ROS_INFO("Ready...");
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsedSeconds = end-start;
-    ROS_INFO("Elapsed: %f s", elapsedSeconds.count());
+    ROS_INFO("[%s] Elapsed: %f s", m_tf_prefix.c_str() , elapsedSeconds.count());
+}
 
-    // Send 0 thrust initially for thrust-lock
-    for (int i = 0; i < 100; ++i) {
-     m_cf.sendSetpoint(0, 0, 0, 0);
-   }
-
-   Crazyradio::Ack ack;
-
-   while(!m_isEmergency) {
+/* Update steps --> Action to be done at every run iteration */
+void CrazyflieROS::updateInformation()
+{
+  if (m_enableLogging  && !m_sentSetpoint && !m_sentExternalPosition){
       // make sure we ping often enough to stream data out
-    if (m_enableLogging && !m_sentExternalImu.load() && !m_sentSetpoint && !m_sentExternalPosition.load()) {
       m_cf.transmitPackets();
-      m_cf.sendPing();
+
+      resetKalmanFilter();
+
+      if (m_cf.isSim())
+        m_cf.sendPing(0);
+      else
+        m_cf.sendPing();
+
       if(m_enable_logging_packets) {
         this->publishPackets();
       }
+      m_sentSetpoint = false;
+      m_sentExternalPosition = false;
     }
-    m_sentSetpoint = false;
-    m_sentExternalPosition.store(false);
-    m_sentExternalImu.store(false);
+}
 
-      // Execute any ROS related functions now
+/***********************************************************************/
+CrazyflieROS::~CrazyflieROS(){
+  m_cf.reboot();
+  stop();
+  ROS_INFO("[%s] Delete CrazyflieROS Instance",m_tf_prefix.c_str());
+}
+
+void CrazyflieROS::stop()
+{
+  ROS_INFO("[%s] Disconnecting ..." , m_tf_prefix.c_str());
+  m_isEmergency = true;
+  if (! m_cf.isSim())
+    m_thread.join();
+}
+
+bool CrazyflieROS::sendPacket (
+  crazyflie_gazebo::sendPacket::Request &req,
+  crazyflie_gazebo::sendPacket::Response &res)
+{
+    /** Convert the message struct to the packet struct */
+  crtpPacket_t packet;
+  packet.size = req.packet.size;
+  packet.header = req.packet.header;
+  for (int i = 0; i < CRTP_MAX_DATA_SIZE; i++) {
+    packet.data[i] = req.packet.data[i];
+  }
+  m_cf.queueOutgoingPacket(packet);
+  return true;
+}
+
+void CrazyflieROS::publishPackets() {
+  std::vector<Crazyradio::Ack> packets = m_cf.retrieveGenericPackets();
+  if (!packets.empty())
+  {
+    std::vector<Crazyradio::Ack>::iterator it;
+    for (it = packets.begin(); it != packets.end(); it++)
+    {
+      crazyflie_gazebo::crtpPacket packet;
+      packet.size = it->size;
+      packet.header = it->data[0];
+      for(int i = 0; i < packet.size; i++)
+      {
+        packet.data[i] = it->data[i+1];
+      }
+      m_pubPackets.publish(packet);
+    }
+  }
+}
+
+bool CrazyflieROS::emergency(
+  std_srvs::Empty::Request& req,
+  std_srvs::Empty::Response& res)
+{
+  ROS_FATAL("[%s] Emergency requested!",m_tf_prefix.c_str());
+  m_isEmergency = true;
+
+  return true;
+}
+
+
+void CrazyflieROS::cmdHoverSetpoint(
+  const crazyflie_gazebo::Hover::ConstPtr& msg)
+{
+     //ROS_INFO("got a hover setpoint");
+  if (!m_isEmergency) {
+    float vx = msg->vx;
+    float vy = msg->vy;
+    float yawRate = msg->yawrate;
+    float zDistance = msg->zDistance;
+
+    m_cf.sendHoverSetpoint(vx, vy, yawRate, zDistance);
+    m_sentSetpoint = true;
+      //ROS_INFO("set a hover setpoint");
+  }
+}
+
+void CrazyflieROS::cmdStop(
+  const std_msgs::Empty::ConstPtr& msg)
+{
+     //ROS_INFO("got a stop setpoint");
+  if (!m_isEmergency) {
+    m_cf.sendStop();
+    m_sentSetpoint = true;
+      //ROS_INFO("set a stop setpoint");
+  }
+}
+
+void CrazyflieROS::cmdPositionSetpoint(
+  const crazyflie_gazebo::Position::ConstPtr& msg)
+{
+  if(!m_isEmergency) {
+    float x = msg->x;
+    float y = msg->y;
+    float z = msg->z;
+    float yaw = msg->yaw;
+
+    m_cf.sendPositionSetpoint(x, y, z, yaw);
+    m_sentSetpoint = true;
+  }
+}
+
+bool CrazyflieROS::updateParams(
+  crazyflie_gazebo::UpdateParams::Request& req,
+  crazyflie_gazebo::UpdateParams::Response& res)
+{
+  ROS_INFO("[%s] Update parameters" , m_tf_prefix.c_str());
+  for (auto&& p : req.params) {
+    std::string ros_param = "/" + m_tf_prefix + "/" + p;
+    size_t pos = p.find("/");
+    std::string group(p.begin(), p.begin() + pos);
+    std::string name(p.begin() + pos + 1, p.end());
+
+    auto entry = m_cf.getParamTocEntry(group, name);
+    if (entry)
+    {
+      switch (entry->type) {
+        case Crazyflie::ParamTypeUint8:
+        updateParam<uint8_t, int>(entry->id, ros_param);
+        break;
+        case Crazyflie::ParamTypeInt8:
+        updateParam<int8_t, int>(entry->id, ros_param);
+        break;
+        case Crazyflie::ParamTypeUint16:
+        updateParam<uint16_t, int>(entry->id, ros_param);
+        break;
+        case Crazyflie::ParamTypeInt16:
+        updateParam<int16_t, int>(entry->id, ros_param);
+        break;
+        case Crazyflie::ParamTypeUint32:
+        updateParam<uint32_t, int>(entry->id, ros_param);
+        break;
+        case Crazyflie::ParamTypeInt32:
+        updateParam<int32_t, int>(entry->id, ros_param);
+        break;
+        case Crazyflie::ParamTypeFloat:
+        updateParam<float, float>(entry->id, ros_param);
+        break;
+      }
+    }
+    else {
+      ROS_ERROR("[%s] Could not find param %s/%s", m_tf_prefix.c_str() , group.c_str(), name.c_str());
+    }
+  }
+  return true;
+}
+
+void CrazyflieROS::cmdVelChanged(
+  const geometry_msgs::Twist::ConstPtr& msg)
+{
+  if (!m_isEmergency) {
+    float roll = msg->linear.y + m_roll_trim;
+    float pitch = - (msg->linear.x + m_pitch_trim);
+    float yawrate = msg->angular.z;
+    uint16_t thrust = std::min<uint16_t>(std::max<float>(msg->linear.z, 0.0), 60000);
+
+    m_cf.sendSetpoint(roll, pitch, yawrate, thrust);
+    m_sentSetpoint = true;
+  }
+}
+
+void CrazyflieROS::cmdFullStateSetpoint(
+  const crazyflie_gazebo::FullState::ConstPtr& msg)
+{
+    //ROS_INFO("got a full state setpoint");
+  if (!m_isEmergency) {
+    float x = msg->pose.position.x;
+    float y = msg->pose.position.y;
+    float z = msg->pose.position.z;
+    float vx = msg->twist.linear.x;
+    float vy = msg->twist.linear.y;
+    float vz = msg->twist.linear.z;
+    float ax = msg->acc.x;
+    float ay = msg->acc.y;
+    float az = msg->acc.z;
+
+    float qx = msg->pose.orientation.x;
+    float qy = msg->pose.orientation.y;
+    float qz = msg->pose.orientation.z;
+    float qw = msg->pose.orientation.w;
+    float rollRate = msg->twist.angular.x;
+    float pitchRate = msg->twist.angular.y;
+    float yawRate = msg->twist.angular.z;
+
+    m_cf.sendFullStateSetpoint(
+      x, y, z,
+      vx, vy, vz,
+      ax, ay, az,
+      qx, qy, qz, qw,
+      rollRate, pitchRate, yawRate);
+    m_sentSetpoint = true;
+      //ROS_INFO("set a full state setpoint");
+  }
+}
+
+void CrazyflieROS::positionMeasurementChanged(
+  const geometry_msgs::PointStamped::ConstPtr& msg)
+{
+  sendExternalPositionUpdate(msg->point.x, msg->point.y, msg->point.z);
+}
+
+void CrazyflieROS::run()
+{
+  ros::NodeHandle n;
+  n.setCallbackQueue(&m_callback_queue);
+  
+  // initialize ROS routines
+  initalizeRosRoutines(n);
+
+  while(!m_isEmergency) {
+
+    updateInformation();
+
+    // Execute any ROS related functions now
     m_callback_queue.callAvailable(ros::WallDuration(0.0));
+
+    // In case of SITL, no need delay since the delay is done when doing recvPacket
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
     // Make sure we turn the engines off
   for (int i = 0; i < 100; ++i) {
    m_cf.sendSetpoint(0, 0, 0, 0);
- }
+  }
 
 }
 
@@ -648,8 +719,8 @@ void CrazyflieROS::onLogStateData(uint32_t time_in_ms, logState* data) {
     m_pubState.publish(msg);
 }
 
-void CrazyflieROS::onLogStatData(uint32_t time_in_ms, logStats* data){
-  ROS_WARN("rxRate = %d | rxDrpRte = %d | txRate = %d", (int) data->rxRate, (int) data->rxDrpRte, (int) data->txRate);
+void CrazyflieROS::onLogLinkStatsData(uint32_t time_in_ms, logLinkStats* data){
+  ROS_WARN("[%s] rxRate = %d | rxDrpRte = %d | txRate = %d", m_tf_prefix.c_str() ,(int) data->rxRate, (int) data->rxDrpRte, (int) data->txRate);
 }
 
 void CrazyflieROS::onLog2Data(uint32_t time_in_ms, log2* data) {
@@ -723,7 +794,7 @@ void CrazyflieROS::onEmptyAck(const crtpPlatformRSSIAck* data) {
 
 void CrazyflieROS::onLinkQuality(float linkQuality) {
   if (linkQuality < 0.7) {
-    ROS_WARN("Link Quality low (%f)", linkQuality);
+    ROS_WARN("[%s] Link Quality low (%f)", m_tf_prefix.c_str() , linkQuality);
   }
 }
 
@@ -732,14 +803,14 @@ void CrazyflieROS::onImuSimDataResponse(const crtpImuSimDataResponse* imuResp){
 }
 
 void CrazyflieROS::onConsole(const char* msg) {
-  ROS_INFO("CF Console: %s", msg);
+  ROS_INFO("[%s] CF Console: %s", m_tf_prefix.c_str() , msg);
 }
 
 bool CrazyflieROS::setGroupMask(
   crazyflie_gazebo::SetGroupMask::Request& req,
   crazyflie_gazebo::SetGroupMask::Response& res)
 {
-  ROS_INFO("SetGroupMask requested");
+  ROS_INFO("[%s] SetGroupMask requested !",m_tf_prefix.c_str());
   m_cf.setGroupMask(req.groupMask);
   return true;
 }
@@ -748,7 +819,7 @@ bool CrazyflieROS::takeoff(
   crazyflie_gazebo::Takeoff::Request& req,
   crazyflie_gazebo::Takeoff::Response& res)
 {
-  ROS_INFO("Takeoff requested");
+  ROS_INFO("[%s] Takeoff requested !",m_tf_prefix.c_str());
   m_cf.takeoff(req.height, req.duration.toSec(), req.groupMask);
   return true;
 }
@@ -757,7 +828,7 @@ bool CrazyflieROS::land(
   crazyflie_gazebo::Land::Request& req,
   crazyflie_gazebo::Land::Response& res)
 {
-  ROS_INFO("Land requested");
+  ROS_INFO("[%s] Land requested !",m_tf_prefix.c_str());
   m_cf.land(req.height, req.duration.toSec(), req.groupMask);
   return true;
 }
@@ -766,7 +837,7 @@ bool CrazyflieROS::stop(
   crazyflie_gazebo::Stop::Request& req,
   crazyflie_gazebo::Stop::Response& res)
 {
-  ROS_INFO("Stop requested");
+  ROS_INFO("[%s] Stop requested !", m_tf_prefix.c_str());
   m_cf.stop(req.groupMask);
   return true;
 }
@@ -775,7 +846,7 @@ bool CrazyflieROS::goTo(
   crazyflie_gazebo::GoTo::Request& req,
   crazyflie_gazebo::GoTo::Response& res)
 {
-  ROS_INFO("GoTo requested");
+  ROS_INFO("[%s] GoTo requested !", m_tf_prefix.c_str());
   m_cf.goTo(req.goal.x, req.goal.y, req.goal.z, req.yaw, req.duration.toSec(), req.relative, req.groupMask);
   return true;
 }
@@ -784,7 +855,7 @@ bool CrazyflieROS::uploadTrajectory(
   crazyflie_gazebo::UploadTrajectory::Request& req,
   crazyflie_gazebo::UploadTrajectory::Response& res)
 {
-  ROS_INFO("UploadTrajectory requested");
+  ROS_INFO("[%s] UploadTrajectory requested !",m_tf_prefix.c_str());
 
   std::vector<Crazyflie::poly4d> pieces(req.pieces.size());
   for (size_t i = 0; i < pieces.size(); ++i) {
@@ -792,7 +863,7 @@ bool CrazyflieROS::uploadTrajectory(
       || req.pieces[i].poly_y.size() != 8
       || req.pieces[i].poly_z.size() != 8
       || req.pieces[i].poly_yaw.size() != 8) {
-      ROS_FATAL("Wrong number of pieces!");
+      ROS_FATAL("[%s] Wrong number of pieces !", m_tf_prefix.c_str());
     return false;
   }
   pieces[i].duration = req.pieces[i].duration.toSec();
@@ -805,7 +876,7 @@ bool CrazyflieROS::uploadTrajectory(
 }
 m_cf.uploadTrajectory(req.trajectoryId, req.pieceOffset, pieces);
 
-ROS_INFO("Upload completed!");
+ROS_INFO("[%s] Upload completed !" , m_tf_prefix.c_str());
 return true;
 }
 
@@ -813,7 +884,7 @@ bool CrazyflieROS::startTrajectory(
   crazyflie_gazebo::StartTrajectory::Request& req,
   crazyflie_gazebo::StartTrajectory::Response& res)
 {
-  ROS_INFO("StartTrajectory requested");
+  ROS_INFO("[%s] StartTrajectory requested", m_tf_prefix.c_str());
   m_cf.startTrajectory(req.trajectoryId, req.timescale, req.reversed, req.relative, req.groupMask);
   return true;
 }
