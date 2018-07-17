@@ -24,6 +24,12 @@
 -->
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Global variables -->
+  <xacro:property name='imu_topic' value='gazebo/imu' />
+  <xacro:property name='mag_topic' value='gazebo/magnetic_field' />
+  <xacro:property name='pressure_topic' value='gazebo/air_pressure' />
+  <xacro:property name="motorsSpeedTopic" value="/gazebo/command/motor_speed"/>
+  
   <!-- Macro to add logging to a bag file. -->
   <xacro:macro name="bag_plugin_macro"
     params="namespace bag_file rotor_velocity_slowdown_sim">
@@ -66,7 +72,7 @@
 
   <!-- Macro to add an IMU. -->
   <xacro:macro name="imu_plugin_macro"
-    params="namespace imu_suffix parent_link imu_topic
+    params="namespace imu_suffix parent_link imu_topic rate
       mass_imu_sensor gyroscope_noise_density gyroscope_random_walk
       gyroscope_bias_correlation_time gyroscope_turn_on_bias_sigma
       accelerometer_noise_density accelerometer_random_walk
@@ -94,6 +100,7 @@
         <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->
         <linkName>${namespace}/imu${imu_suffix}_link</linkName> <!-- (string, required): name of the body which holds the IMU sensor -->
         <imuTopic>${imu_topic}</imuTopic> <!-- (string): name of the sensor output topic and prefix of service names (defaults to imu) -->
+        <rate>${rate}</rate> <!-- Imu frequency update in Hz -->
         <gyroscopeNoiseDensity>${gyroscope_noise_density}</gyroscopeNoiseDensity> <!-- Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] -->
         <gyroscopeRandomWalk>${gyroscope_random_walk}</gyroscopeRandomWalk> <!-- Gyroscope bias random walk [rad/s/s/sqrt(Hz)] -->
         <gyroscopeBiasCorrelationTime>${gyroscope_bias_correlation_time}</gyroscopeBiasCorrelationTime> <!-- Gyroscope bias correlation time constant [s] -->

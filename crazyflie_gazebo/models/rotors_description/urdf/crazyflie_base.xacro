@@ -33,10 +33,6 @@
 
   <xacro:property name="enable_ground_truth" value="$(arg enable_ground_truth)" />
 
-  <xacro:property name='imu_topic' value='gazebo/imu' />
-  <xacro:property name='mag_topic' value='gazebo/magnetic_field' />
-  <xacro:property name='pressure_topic' value='gazebo/air_pressure' />
-
   <xacro:include filename="$(arg rotors_description_dir)/urdf/component_snippets.xacro"/>
 
   <!-- Instantiate crazyflie "mechanics" -->
@@ -63,6 +59,7 @@
     parent_link="base_link"
     imu_topic="${imu_topic}"
     mass_imu_sensor="0.00001"
+    rate="500"
     gyroscope_noise_density="1.7667e-4"
     gyroscope_random_walk="9.2542e-06"
     gyroscope_bias_correlation_time="1000.0"
@@ -79,6 +76,7 @@
       imu_suffix=""
       parent_link="base_link"
       imu_topic="${imu_topic}"
+      rate="400"
       mass_imu_sensor="0.00001"
       gyroscope_noise_density="0.0"
       gyroscope_random_walk="0.0"
@@ -129,26 +127,28 @@
     rate="100">
   </xacro:lps_plugin_macro>
 
-  <xacro:crtp_interface_macro
-    namespace="${namespace}"
-    imu_sub_topic="${imu_topic}"
-    mag_sub_topic="${mag_topic}"
-    pressure_sub_topic="${pressure_topic}"
-    motors_speeds_pub_topic="gazebo/command/motor_speed"
-    rotor_count="4"
-    uri="${uri}"
-    roll_trim="${roll_trim}"
-    pitch_trim="${pitch_trim}"
-    enable_logging="${enable_logging}"
-    use_ros_time="${use_ros_time}"
-    enable_logging_imu="${enable_logging_imu}"
-    enable_logging_magnetic_field="${enable_logging_magnetic_field}"
-    enable_logging_temperature="${enable_logging_temperature}"
-    enable_logging_pressure="${enable_logging_pressure}"
-    enable_logging_battery="${enable_logging_battery}"
-    enable_logging_packets="${enable_logging_packets}"
-    enable_parameters="${enable_parameters}">
-  </xacro:crtp_interface_macro>
+  <xacro:if value="$(arg is_hitl)">
+    <xacro:crtp_interface_macro
+      namespace="${namespace}"
+      imu_sub_topic="${imu_topic}"
+      mag_sub_topic="${mag_topic}"
+      pressure_sub_topic="${pressure_topic}"
+      motors_speeds_pub_topic="${motorsSpeedTopic}"
+      rotor_count="4"
+      uri="${uri}"
+      roll_trim="${roll_trim}"
+      pitch_trim="${pitch_trim}"
+      enable_logging="${enable_logging}"
+      use_ros_time="${use_ros_time}"
+      enable_logging_imu="${enable_logging_imu}"
+      enable_logging_magnetic_field="${enable_logging_magnetic_field}"
+      enable_logging_temperature="${enable_logging_temperature}"
+      enable_logging_pressure="${enable_logging_pressure}"
+      enable_logging_battery="${enable_logging_battery}"
+      enable_logging_packets="${enable_logging_packets}"
+      enable_parameters="${enable_parameters}">
+    </xacro:crtp_interface_macro>
+  </xacro:if>
 
   <xacro:if value="${enable_ground_truth}">
     <!-- Odometry Sensor -->

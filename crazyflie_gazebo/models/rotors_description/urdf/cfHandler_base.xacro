@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!--
+    Copyright 2018 Eric Goubault, Cosynus, LIX, France
+    Copyright 2018 Sylve Putot, Cosynus, LIX, France
+    Copyright 2018 Franck Djeumou, Cosynus, LIX, France
+-->
+
+<robot name="cfHandler" xmlns:xacro="http://ros.org/wiki/xacro">
+
+
+  <xacro:property name="enable_logging" value="$(arg enable_logging)" />
+  <xacro:property name="enable_logging_imu" value="$(arg enable_logging_imu)" />
+  <xacro:property name="enable_logging_temperature" value="$(arg enable_logging_temperature)" />
+  <xacro:property name="enable_logging_pressure" value="$(arg enable_logging_pressure)" />
+  <xacro:property name="enable_logging_battery" value="$(arg enable_logging_battery)" />
+  <xacro:property name="enable_logging_packets" value="$(arg enable_logging_packets)" />
+  <xacro:property name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field)" />
+  <xacro:property name="use_ros_time" value="$(arg use_ros_time)" />
+  <xacro:property name="enable_parameters" value="$(arg enable_parameters)" />
+  <xacro:property name="nbQuads" value="$(arg nbQuads)" />
+  <xacro:property name="cfPrefix" value="$(arg cfPrefix)" />
+  <xacro:property name="udpPort" value="$(arg udpPort)" />
+
+  <xacro:include filename="$(arg rotors_description_dir)/urdf/component_snippets.xacro"/>
+
+  <link name="base_link"></link>
+  <gazebo>
+    <allow_auto_disable>0</allow_auto_disable>
+  </gazebo>
+
+  <gazebo>
+      <plugin name="cfGroupHandler" filename="libgazebo_cfHandler_plugin.so">
+        <imuSubTopic>${imu_topic}</imuSubTopic>
+        <magnetometerTopic>${mag_topic}</magnetometerTopic>
+        <pressureTopic>${pressure_topic}</pressureTopic>
+        <motorSpeedsPubTopic>${motorsSpeedTopic}</motorSpeedsPubTopic>
+        <enableLogging>${enable_logging}</enableLogging>
+        <useRosTime>${use_ros_time}</useRosTime>
+        <enableLoggingImu>${enable_logging_imu}</enableLoggingImu>
+        <enableLoggingTemperature>${enable_logging_temperature}</enableLoggingTemperature>
+        <enableLoggingMagneticField>${enable_logging_magnetic_field}</enableLoggingMagneticField>
+        <enableLoggingPressure>${enable_logging_pressure}</enableLoggingPressure>
+        <enableLoggingBattery>${enable_logging_battery}</enableLoggingBattery>
+        <enableLoggingPackets>${enable_logging_packets}</enableLoggingPackets>
+        <enableParameters>${enable_parameters}</enableParameters>
+        <nbQuads>${nbQuads}</nbQuads>
+        <cfPrefix>${cfPrefix}</cfPrefix>
+        <udpPort>${udpPort}</udpPort>
+      </plugin>
+  </gazebo>
+
+</robot>

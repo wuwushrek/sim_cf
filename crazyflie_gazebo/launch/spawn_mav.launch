@@ -6,7 +6,7 @@
   <arg name="x" default="0.0"/>
   <arg name="y" default="0.0"/>
   <arg name="z" default="0.03"/>
-  <arg name="enable_ground_truth" default="true"/>
+  <arg name="enable_ground_truth" default="false"/>
   <arg name="log_file" default="$(arg mav_name)"/>
   <arg name="enable_wind" default="false"/>
   <arg name="tf_prefix" default="$(arg tf_prefix)"/>
@@ -27,6 +27,7 @@
 
   <arg name="color_prop_front" default="Blue" />
   <arg name="color_prop_back" default="Red" />
+  <arg name="is_hitl" default="false"/>
 
 
   <!-- send the robot XML to param server -->
@@ -37,6 +38,7 @@
     enable_wind:=$(arg enable_wind)
     log_file:=$(arg log_file)
     mav_name:=$(arg mav_name)
+    is_hitl:=$(arg is_hitl)
     uri:=$(arg uri)
     roll_trim:=$(arg roll_trim)
     pitch_trim:=$(arg pitch_trim)

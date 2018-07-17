@@ -274,11 +274,12 @@ set(enable_logging_temperature "false")
 set(enable_logging_pressure "false")
 set(enable_logging_battery "false")
 set(enable_parameters "true")
+set(is_hitl "false")
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
-  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_base.urdf  ${rotors_description_dir}/urdf/crazyflie_base.xacro namespace:=${namespace} enable_wind:=${enable_wind} enable_parameters:=${enable_parameters} enable_logging:=${enable_logging} uri:=${uri} enable_ground_truth:=${enable_ground_truth} color_prop_front:=${color_prop_front} color_prop_back:=${color_prop_back} rotors_description_dir:=${rotors_description_dir} use_ros_time:=${use_ros_time} roll_trim:=${roll_trim} pitch_trim:=${pitch_trim} enable_logging_battery:=${enable_logging_battery} enable_logging_pressure:=${enable_logging_pressure} enable_logging_temperature:=${enable_logging_temperature} enable_logging_imu:=${enable_logging_imu} enable_logging_packets:=${enable_logging_packets} enable_logging_magnetic_field:=${enable_logging_magnetic_field}
+  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_base.urdf  ${rotors_description_dir}/urdf/crazyflie_base.xacro namespace:=${namespace} enable_wind:=${enable_wind} is_hitl:=${is_hitl} enable_parameters:=${enable_parameters} enable_logging:=${enable_logging} uri:=${uri} enable_ground_truth:=${enable_ground_truth} color_prop_front:=${color_prop_front} color_prop_back:=${color_prop_back} rotors_description_dir:=${rotors_description_dir} use_ros_time:=${use_ros_time} roll_trim:=${roll_trim} pitch_trim:=${pitch_trim} enable_logging_battery:=${enable_logging_battery} enable_logging_pressure:=${enable_logging_pressure} enable_logging_temperature:=${enable_logging_temperature} enable_logging_imu:=${enable_logging_imu} enable_logging_packets:=${enable_logging_packets} enable_logging_magnetic_field:=${enable_logging_magnetic_field}
   COMMAND gz sdf -p  ${rotors_description_dir}/urdf/crazyflie_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
   COMMAND rm -f ${rotors_description_dir}/urdf/crazyflie_base.urdf
   DEPENDS ${rotors_description_dir}/urdf/crazyflie.xacro
@@ -286,6 +287,21 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie
   DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
   )
 add_custom_target(crazyflie_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf)
+
+set(nbQuads "1")
+set(cfPrefix "cf")
+set(udpPort "19950")
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
+  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/cfHandler_base.urdf  ${rotors_description_dir}/urdf/cfHandler_base.xacro nbQuads:=${nbQuads} cfPrefix:=${cfPrefix} enable_parameters:=${enable_parameters} enable_logging:=${enable_logging} udpPort:=${udpPort} rotors_description_dir:=${rotors_description_dir} use_ros_time:=${use_ros_time} enable_logging_battery:=${enable_logging_battery} enable_logging_pressure:=${enable_logging_pressure} enable_logging_temperature:=${enable_logging_temperature} enable_logging_imu:=${enable_logging_imu} enable_logging_packets:=${enable_logging_packets} enable_logging_magnetic_field:=${enable_logging_magnetic_field}
+  COMMAND gz sdf -p  ${rotors_description_dir}/urdf/cfHandler_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
+  COMMAND rm -f ${rotors_description_dir}/urdf/cfHandler_base.urdf
+  DEPENDS ${rotors_description_dir}/urdf/cfHandler_base.xacro
+  DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
+  )
+add_custom_target(cfHandler_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf)
 
 
 #-----------#
@@ -454,17 +470,24 @@ add_dependencies(crazyflie_server crazyflie_gazebo_generate_messages_cpp)
 target_link_libraries(crazyflie_server ${catkin_LIBRARIES} crazyflie_ros)
 #==============================================================================================//
 
-#================================== CF NODE FOR SENSORS DATA ===================================//
-add_executable(crazyflie_sensors src/crazyflie_ros/CrazyflieCollectSensors.cpp)
-add_dependencies(crazyflie_sensors crazyflie_gazebo_generate_messages_cpp)
-target_link_libraries(crazyflie_sensors ${catkin_LIBRARIES} crazyflie_cpp)
+#==================================== TEST ======================================//
+add_executable(test_cf src/crazyflie_ros/test_cf.cpp)
+add_dependencies(test_cf crazyflie_gazebo_generate_messages_cpp)
+target_link_libraries(test_cf ${catkin_LIBRARIES} ${CRAZYFLIE_COMM_LIBRARY})
 #==============================================================================================//
 
 #======================================= CRTP PLUGIN ==========================================//
-add_library(gazebo_crtp_interface SHARED src/gazebo_crtp_interface.cpp)
-target_link_libraries(gazebo_crtp_interface ${catkin_LIBRARIES} crazyflie_ros)
-add_dependencies(gazebo_crtp_interface ${catkin_EXPORTED_TARGETS})
-list(APPEND targets_to_install gazebo_crtp_interface)
+# add_library(gazebo_crtp_interface SHARED src/gazebo_crtp_interface.cpp)
+# target_link_libraries(gazebo_crtp_interface ${catkin_LIBRARIES} crazyflie_ros)
+# add_dependencies(gazebo_crtp_interface ${catkin_EXPORTED_TARGETS})
+# list(APPEND targets_to_install gazebo_crtp_interface)
+#==============================================================================================//
+
+#======================================= cfHandler PLUGIN ==========================================//
+add_library(gazebo_cfHandler_plugin SHARED src/gazebo_cfHandler_plugin.cpp)
+target_link_libraries(gazebo_cfHandler_plugin ${catkin_LIBRARIES} crazyflie_ros)
+add_dependencies(gazebo_cfHandler_plugin ${catkin_EXPORTED_TARGETS})
+list(APPEND targets_to_install gazebo_cfHandler_plugin)
 #==============================================================================================//
 
 #===================================== Joy Control Node =======================================//
