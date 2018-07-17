@@ -3,53 +3,58 @@
 <launch>
   <arg name="mav_name" default="crazyflie"/>
   <arg name="world_name" default="basic"/>
-  <arg name="enable_ground_truth" default="true"/>
-  <arg name="enable_wind" default="false"/>
-  <arg name="log_file" default="$(arg mav_name)"/>
   <arg name="debug" default="false"/>
   <arg name="gui" default="true"/>
   <arg name="paused" default="true"/>
 
   <!-- Crazyflie arguments -->
+  <arg name="is_hitl" default="false"/>
+  <arg name="enable_logging" default="true" />
+  <arg name="enable_parameters" default="true" />
+  <arg name="use_ros_time" default="true" />
+  <arg name="enable_logging_imu" default="false" />
+  <arg name="enable_logging_temperature" default="false" />
+  <arg name="enable_logging_magnetic_field" default="false" />
+  <arg name="enable_logging_pressure" default="false" />
+  <arg name="enable_logging_battery" default="false" />
+  <arg name="enable_logging_packets" default="false" />
+
+  <arg name="nbQuads" default="3" />
+  <arg name="cfPrefix" default="cf" />
+  <arg name="udpPort" default="19950"/>
+  <arg name="handerName" default="handler1"/>
+
   <!-- Arguments for first Crazyflie -->
-  <arg name="uri_1" default="INADDR_ANY://19950" />
-  <arg name="tf_prefix_1" default="cf1" />
-  <arg name="roll_trim_1" default="0" />
-  <arg name="pitch_trim_1" default="0" />
-  <arg name="enable_logging_1" default="true" />
-  <arg name="enable_parameters_1" default="true" />
-  <arg name="use_ros_time_1" default="true" />
-  <arg name="enable_logging_imu_1" default="true" />
-  <arg name="enable_logging_temperature_1" default="false" />
-  <arg name="enable_logging_magnetic_field_1" default="false" />
-  <arg name="enable_logging_pressure_1" default="false" />
-  <arg name="enable_logging_battery_1" default="false" />
-  <arg name="enable_logging_packets_1" default="false" />
+  <arg name="tf_prefix_1" default="$(arg cfPrefix)1" />
   <arg name="color_prop_front_1" default="Blue" />
-  <arg name="color_prop_back_1" default="Red" />
+  <arg name="color_prop_back_1" default="Blue" />
   <arg name="x_1" default="1.0" />
   <arg name="y_1" default="0.0" />
   <arg name="z_1" default="0.03" />
 
   <!-- Arguments for second Crazyflie -->
-  <arg name="uri_2" default="INADDR_ANY://19951" />
-  <arg name="tf_prefix_2" default="cf2" />
-  <arg name="roll_trim_2" default="0" />
-  <arg name="pitch_trim_2" default="0" />
-  <arg name="enable_logging_2" default="true" />
-  <arg name="enable_parameters_2" default="true" />
-  <arg name="use_ros_time_2" default="true" />
-  <arg name="enable_logging_imu_2" default="true" />
-  <arg name="enable_logging_temperature_2" default="false" />
-  <arg name="enable_logging_magnetic_field_2" default="false" />
-  <arg name="enable_logging_pressure_2" default="false" />
-  <arg name="enable_logging_battery_2" default="false" />
-  <arg name="enable_logging_packets_2" default="false" />
-  <arg name="color_prop_front_2" default="Green" />
-  <arg name="color_prop_back_2" default="Magenta" />
+  <arg name="tf_prefix_2" default="$(arg cfPrefix)2" />
+  <arg name="color_prop_front_2" default="Red" />
+  <arg name="color_prop_back_2" default="Red" />
   <arg name="x_2" default="-1.0" />
   <arg name="y_2" default="0.0" />
   <arg name="z_2" default="0.03" />
+
+  <!-- Arguments for third Crazyflie -->
+  <arg name="tf_prefix_3" default="$(arg cfPrefix)3" />
+  <arg name="color_prop_front_3" default="Green" />
+  <arg name="color_prop_back_3" default="Green" />
+  <arg name="x_3" default="0.0" />
+  <arg name="y_3" default="-1.0" />
+  <arg name="z_3" default="0.03" />
+
+  <!-- Arguments for forth Crazyflie -->
+<!--   <arg name="tf_prefix_4" default="$(arg cfPrefix)4" />
+  <arg name="color_prop_front_4" default="White" />
+  <arg name="color_prop_back_4" default="White" />
+  <arg name="x_4" default="0.0" />
+  <arg name="y_4" default="1.0" />
+  <arg name="z_4" default="0.03" /> -->
 
 
   <!-- The following line causes gzmsg and gzerr messages to be printed to the console
@@ -67,27 +72,12 @@
     <arg name="verbose" value="$(arg verbose)"/>
   </include>
 
-  <group ns="cf1">
+  <group ns="$(arg cfPrefix)1">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
+      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
-      <arg name="enable_wind" value="$(arg enable_wind)" />
-      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
-      <arg name="log_file" value="$(arg log_file)"/>
-
-      <arg name="uri" value="$(arg uri_1)"/>
       <arg name="tf_prefix" value="$(arg tf_prefix_1)"/>
-      <arg name="roll_trim" value="$(arg roll_trim_1)"/>
-      <arg name="pitch_trim" value="$(arg pitch_trim_1)"/>
-      <arg name="enable_logging" value="$(arg enable_logging_1)"/>
-      <arg name="enable_parameters" value="$(arg enable_parameters_1)"/>
-      <arg name="use_ros_time" value="$(arg use_ros_time_1)"/>
-      <arg name="enable_logging_imu" value="$(arg enable_logging_imu_1)"/>
-      <arg name="enable_logging_temperature" value="$(arg enable_logging_temperature_1)"/>
-      <arg name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field_1)"/>
-      <arg name="enable_logging_pressure" value="$(arg enable_logging_pressure_1)"/>
-      <arg name="enable_logging_battery" value="$(arg enable_logging_battery_1)"/>
-      <arg name="enable_logging_packets" value="$(arg enable_logging_packets_1)"/>
       <arg name="color_prop_front" default="$(arg color_prop_front_1)" />
       <arg name="color_prop_back" default="$(arg color_prop_back_1)" />
       <arg name="x" default="$(arg x_1)"/>
@@ -95,28 +85,13 @@
       <arg name="z" default="$(arg z_1)"/>
     </include>
   </group>
-  
-  <group ns="cf2">
-      <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
+
+  <group ns="$(arg cfPrefix)2">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
+      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
-      <arg name="enable_wind" value="$(arg enable_wind)" />
-      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
-      <arg name="log_file" value="$(arg log_file)"/>
-
-      <arg name="uri" value="$(arg uri_2)"/>
       <arg name="tf_prefix" value="$(arg tf_prefix_2)"/>
-      <arg name="roll_trim" value="$(arg roll_trim_2)"/>
-      <arg name="pitch_trim" value="$(arg pitch_trim_2)"/>
-      <arg name="enable_logging" value="$(arg enable_logging_2)"/>
-      <arg name="enable_parameters" value="$(arg enable_parameters_2)"/>
-      <arg name="use_ros_time" value="$(arg use_ros_time_2)"/>
-      <arg name="enable_logging_imu" value="$(arg enable_logging_imu_2)"/>
-      <arg name="enable_logging_temperature" value="$(arg enable_logging_temperature_2)"/>
-      <arg name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field_2)"/>
-      <arg name="enable_logging_pressure" value="$(arg enable_logging_pressure_2)"/>
-      <arg name="enable_logging_battery" value="$(arg enable_logging_battery_2)"/>
-      <arg name="enable_logging_packets" value="$(arg enable_logging_packets_2)"/>
       <arg name="color_prop_front" default="$(arg color_prop_front_2)" />
       <arg name="color_prop_back" default="$(arg color_prop_back_2)" />
       <arg name="x" default="$(arg x_2)"/>
@@ -124,4 +99,85 @@
       <arg name="z" default="$(arg z_2)"/>
     </include>
   </group>
+
+   <group ns="$(arg cfPrefix)3">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
+      <arg name="is_hitl" value="$(arg is_hitl)"/>
+      <arg name="mav_name" value="$(arg mav_name)" />
+      <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
+      <arg name="tf_prefix" value="$(arg tf_prefix_3)"/>
+      <arg name="color_prop_front" default="$(arg color_prop_front_3)" />
+      <arg name="color_prop_back" default="$(arg color_prop_back_3)" />
+      <arg name="x" default="$(arg x_3)"/>
+      <arg name="y" default="$(arg y_3)"/>
+      <arg name="z" default="$(arg z_3)"/>
+    </include>
+  </group>
+  
+<!--    <group ns="$(arg cfPrefix)4">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
+      <arg name="is_hitl" value="$(arg is_hitl)"/>
+      <arg name="mav_name" value="$(arg mav_name)" />
+      <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
+      <arg name="tf_prefix" value="$(arg tf_prefix_4)"/>
+      <arg name="color_prop_front" default="$(arg color_prop_front_4)" />
+      <arg name="color_prop_back" default="$(arg color_prop_back_4)" />
+      <arg name="x" default="$(arg x_4)"/>
+      <arg name="y" default="$(arg y_4)"/>
+      <arg name="z" default="$(arg z_4)"/>
+    </include>
+  </group> -->
+
+<!--   <group ns="cf_11">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
+      <arg name="is_hitl" value="$(arg is_hitl)"/>
+      <arg name="mav_name" value="$(arg mav_name)" />
+      <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
+      <arg name="tf_prefix" value="cf_11"/>
+      <arg name="color_prop_front" default="$(arg color_prop_front_4)" />
+      <arg name="color_prop_back" default="$(arg color_prop_back_4)" />
+      <arg name="x" default="$(arg x_4)"/>
+      <arg name="y" default="$(arg y_4)"/>
+      <arg name="z" default="$(arg z_4)"/>
+    </include>
+  </group> -->
+
+  <group ns="handler1">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_plugin.launch">
+      <!--<arg name="handlerName" value="$(arg handerName)" />-->
+
+      <arg name="nbQuads" value="$(arg nbQuads)" />
+      <arg name="cfPrefix" value="$(arg cfPrefix)" />
+      <arg name="udpPort" value="$(arg udpPort)" />
+
+      <arg name="enable_logging" value="$(arg enable_logging)"/>
+      <arg name="enable_parameters" value="$(arg enable_parameters)"/>
+      <arg name="use_ros_time" value="$(arg use_ros_time)"/>
+      <arg name="enable_logging_imu" value="$(arg enable_logging_imu)"/>
+      <arg name="enable_logging_temperature" value="$(arg enable_logging_temperature)"/>
+      <arg name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field)"/>
+      <arg name="enable_logging_pressure" value="$(arg enable_logging_pressure)"/>
+      <arg name="enable_logging_battery" value="$(arg enable_logging_battery)"/>
+      <arg name="enable_logging_packets" value="$(arg enable_logging_packets)"/>
+    </include>
+  </group>
+
+<!--   <group ns="handler2">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_plugin.launch">
+      <arg name="plugin_name" value="cfHandler1" />
+      <arg name="nbQuads" value="1" />
+      <arg name="cfPrefix" value="cf_1" />
+      <arg name="udpPort" value="19951" />
+
+      <arg name="enable_logging" value="$(arg enable_logging)"/>
+      <arg name="enable_parameters" value="$(arg enable_parameters)"/>
+      <arg name="use_ros_time" value="$(arg use_ros_time)"/>
+      <arg name="enable_logging_imu" value="$(arg enable_logging_imu)"/>
+      <arg name="enable_logging_temperature" value="$(arg enable_logging_temperature)"/>
+      <arg name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field)"/>
+      <arg name="enable_logging_pressure" value="$(arg enable_logging_pressure)"/>
+      <arg name="enable_logging_battery" value="$(arg enable_logging_battery)"/>
+      <arg name="enable_logging_packets" value="$(arg enable_logging_packets)"/>
+    </include>
+  </group> -->
 </launch>

@@ -29,7 +29,7 @@
 
   <arg name="tf_prefix_1" default="$(arg cfPrefix)" />
   <arg name="color_prop_front_1" default="Blue" />
-  <arg name="color_prop_back_1" default="Blue" />
+  <arg name="color_prop_back_1" default="Red" />
   <arg name="x_1" default="0.0" />
   <arg name="y_1" default="0.0" />
   <arg name="z_1" default="0.03" />
@@ -62,39 +62,6 @@
       <arg name="y" default="$(arg y_1)"/>
       <arg name="z" default="$(arg z_1)"/>
     </include>
-
-    <!-- Launch joy node with the autorepeat_rate parameter -->
-    <node pkg="joy" name="joy" type="joy_node" output="screen" >
-      <param name="autorepeat_rate" value="50"/>
-    </node>
-
-    <!-- Teleop node for cf control -->
-    <node pkg="crazyflie_gazebo" name="cf_joy" type="joy_control_node" output="screen">
-      <param name="only_command" value = "$(arg only_command)" />
-      <param name="LB" value="4" />
-      <param name="RB" value="5" />
-      <param name="LT" value="2" />
-      <param name="RT" value="5" />
-      <param name="X" value="2" />
-      <param name="Y" value="3" />
-      <param name="A" value="0" />
-      <param name="B" value="1" />
-      <param name="Start" value="7" />
-      <param name="Back" value="6" />
-      <param name="up_down_axis_left" value="1" />
-      <param name="left_right_axis_left" value="0" />
-      <param name="up_down_axis_right" value="4" />
-      <param name="left_right_axis_right" value="3" />
-      <param name="left_cross_key" value="6" />
-      <param name="right_cross_key" value="6" />
-      <param name="up_cross_key" value="7" />
-      <param name="down_cross_key" value="7" />
-      <param name="takeoff_duration" value="2.0" />
-      <param name="land_duration" value="4.0" />
-      <param name="takeoff_height" value="0.5"/>
-      <param name="groupMask" value="0"/>
-      <!-- <param name="yaw_rate_max" value="3.14" /> -->
-    </node>
   </group>
 
   <!-- Spawn the crazyflie handler model -->
