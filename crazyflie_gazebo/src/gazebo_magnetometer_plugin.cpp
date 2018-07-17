@@ -197,27 +197,26 @@ void GazeboMagnetometerPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
 void GazeboMagnetometerPlugin::CreatePubsAndSubs() {
   // Create temporary "ConnectGazeboToRosTopic" publisher and message
-  gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
-      node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>(
-          "~/" + kConnectGazeboToRosSubtopic, 1);
+  // gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
+  //     node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>(
+  //         "~/" + kConnectGazeboToRosSubtopic, 1);
 
   // ============================================ //
   // ========= MAGNETIC FIELD MSG SETUP ========= //
   // ============================================ //
   gzdbg << "~/" + model_->GetName() + "/" + magnetometer_topic_<< std::endl;
-  magnetometer_pub_ = node_handle_->Advertise<gz_sensor_msgs::MagneticField>(
-      "~/" + model_->GetName() + "/" + magnetometer_topic_, 1);
+  magnetometer_pub_ = node_handle_->Advertise<gz_sensor_msgs::MagneticField>( model_->GetName() + "/" + magnetometer_topic_, 1);
 
-  gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
-  // connect_gazebo_to_ros_topic_msg.set_gazebo_namespace(namespace_);
-  connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName() + "/" +
-                                                   magnetometer_topic_);
-  connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
-                                                magnetometer_topic_);
-  connect_gazebo_to_ros_topic_msg.set_msgtype(
-      gz_std_msgs::ConnectGazeboToRosTopic::MAGNETIC_FIELD);
-  connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,
-                                           true);
+  // gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
+  // // connect_gazebo_to_ros_topic_msg.set_gazebo_namespace(namespace_);
+  // connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName() + "/" +
+  //                                                  magnetometer_topic_);
+  // connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
+  //                                               magnetometer_topic_);
+  // connect_gazebo_to_ros_topic_msg.set_msgtype(
+  //     gz_std_msgs::ConnectGazeboToRosTopic::MAGNETIC_FIELD);
+  // connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,
+  //                                          true);
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboMagnetometerPlugin);

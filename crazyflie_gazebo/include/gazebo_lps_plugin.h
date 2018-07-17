@@ -30,7 +30,7 @@
 namespace gazebo
 {
 
-static constexpr int kDefaultLpsDelay = -1;
+static constexpr double kDefaultLpsDelay = 0;
 
 class GAZEBO_VISIBLE LpsPlugin : public ModelPlugin
 {

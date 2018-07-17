@@ -31,7 +31,8 @@ namespace gazebo {
 
 GazeboImuPlugin::GazeboImuPlugin()
     : ModelPlugin(),
-      velocity_prev_W_(0,0,0)
+      velocity_prev_W_(0,0,0),
+      imu_delay_(kDefaultImuDelay)
 {
 }
 
@@ -100,13 +101,19 @@ void GazeboImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   last_time_ = world_->GetSimTime();
   #endif
 
+  int imu_rate = -1;
+  getSdfParam<int>(_sdf,"rate",imu_rate , imu_rate);
+  if (imu_rate > 0){
+    imu_delay_ = 1.0 / imu_rate;
+  }
+
   // Listen to the update event. This event is broadcast every
   // simulation iteration.
   this->updateConnection_ =
       event::Events::ConnectWorldUpdateBegin(
           boost::bind(&GazeboImuPlugin::OnUpdate, this, _1));
 
-  imu_pub_ = node_handle_->Advertise<gz_sensor_msgs::Imu>("~/" + model_->GetName() + "/" + imu_topic_, 1);
+  imu_pub_ = node_handle_->Advertise<gz_sensor_msgs::Imu>(model_->GetName() + "/" + imu_topic_, 1);
 
   // Fill imu message.
   // imu_message_.header.frame_id = frame_id_; TODO Add header
@@ -190,11 +197,11 @@ void GazeboImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 ///        accelerometer and gyroscope measurement simulation.
 void GazeboImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
                                Eigen::Vector3d* angular_velocity,
-                               const double dt) {
+                               double dt) {
   // CHECK(linear_acceleration);
   // CHECK(angular_velocity);
   assert(dt > 0.0);
-
+  dt = 0.01;
   // Gyrosocpe
   double tau_g = imu_parameters_.gyroscope_bias_correlation_time;
   // Discrete-time standard deviation equivalent to an "integrating" sampler
@@ -250,6 +257,10 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   common::Time current_time  = world_->GetSimTime();
 #endif
   double dt = (current_time - last_time_).Double();
+
+  if (dt < imu_delay_)
+    return;
+  
   last_time_ = current_time;
   double t = current_time.Double();
 

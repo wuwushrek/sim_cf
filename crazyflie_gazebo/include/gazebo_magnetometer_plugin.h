@@ -38,7 +38,7 @@ static constexpr double kDefaultRefMagNorth = 0.000021493;
 static constexpr double kDefaultRefMagEast = 0.000000815;
 static constexpr double kDefaultRefMagDown = 0.000042795;
 
-static constexpr double kDefaultMagDelay = 10000.0; //Why not
+static constexpr double kDefaultMagDelay = 0; //Why not
 
 class GazeboMagnetometerPlugin : public ModelPlugin {
 

@@ -32,7 +32,7 @@
 
 namespace gazebo {
 
-static constexpr int kDefaultPressureDelay = -1;
+static constexpr double kDefaultPressureDelay = 0;
 
 // Constants
 static constexpr double kGasConstantNmPerKmolKelvin = 8314.32;

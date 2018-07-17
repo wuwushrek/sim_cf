@@ -55,6 +55,8 @@ static constexpr double kDefaultAdisAccelerometerTurnOnBiasSigma =
 // Earth's gravity in Zurich (lat=+47.3667degN, lon=+8.5500degE, h=+500m, WGS84)
 static constexpr double kDefaultGravityMagnitude = 9.8068;
 
+static constexpr double kDefaultImuDelay = 0;
+
 static const std::string kDefaultImuTopic = "imu";
 
 // A description of the parameters:
@@ -110,7 +112,7 @@ class GazeboImuPlugin : public ModelPlugin {
   void addNoise(
       Eigen::Vector3d* linear_acceleration,
       Eigen::Vector3d* angular_velocity,
-      const double dt);
+      double dt);
 
   void OnUpdate(const common::UpdateInfo&);
 
@@ -134,6 +136,7 @@ class GazeboImuPlugin : public ModelPlugin {
   // Pointer to the update event connection
   event::ConnectionPtr updateConnection_;
 
+  double imu_delay_;
   common::Time last_time_;
 
   gz_sensor_msgs::Imu imu_message_;

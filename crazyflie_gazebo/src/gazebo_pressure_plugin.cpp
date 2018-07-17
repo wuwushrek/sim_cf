@@ -153,26 +153,26 @@ void GazeboPressurePlugin::OnUpdate(const common::UpdateInfo& _info) {
 
 void GazeboPressurePlugin::CreatePubsAndSubs() {
   // Create temporary "ConnectGazeboToRosTopic" publisher and message.
-  gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
-      node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>(
-          "~/" + kConnectGazeboToRosSubtopic, 1);
+  // gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
+  //     node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>(
+  //         "~/" + kConnectGazeboToRosSubtopic, 1);
 
   // ============================================ //
   // ========= FLUID PRESSURE MSG SETUP ========= //
   // ============================================ //
 
   pressure_pub_ = node_handle_->Advertise<gz_sensor_msgs::FluidPressure>(
-      "~/" + model_->GetName() + "/" + pressure_topic_, 1);
+      model_->GetName() + "/" + pressure_topic_, 1);
 
-  gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
-  connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName() + "/" +
-                                                   pressure_topic_);
-  connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
-                                                pressure_topic_);
-  connect_gazebo_to_ros_topic_msg.set_msgtype(
-      gz_std_msgs::ConnectGazeboToRosTopic::FLUID_PRESSURE);
-  connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,
-                                           true);
+//   gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
+//   connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName() + "/" +
+//                                                    pressure_topic_);
+//   connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
+//                                                 pressure_topic_);
+//   connect_gazebo_to_ros_topic_msg.set_msgtype(
+//       gz_std_msgs::ConnectGazeboToRosTopic::FLUID_PRESSURE);
+//   connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,
+//                                            true);
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboPressurePlugin);

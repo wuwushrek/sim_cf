@@ -6,7 +6,9 @@
 namespace gazebo {
 	GZ_REGISTER_MODEL_PLUGIN(LpsPlugin)
 
-	LpsPlugin::LpsPlugin() : ModelPlugin()
+	LpsPlugin::LpsPlugin() 
+	: ModelPlugin()
+	,lps_delay_(kDefaultLpsDelay)
 	{ }
 
 	LpsPlugin::~LpsPlugin()
@@ -105,15 +107,15 @@ namespace gazebo {
 
 	void LpsPlugin::CreatePubsAndSubs() {
   		// Create temporary "ConnectGazeboToRosTopic" publisher and message.
-		gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
-		node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>("~/" + kConnectGazeboToRosSubtopic, 1);
+		// gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
+		// node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>("~/" + kConnectGazeboToRosSubtopic, 1);
 
-		lps_pub_ = node_handle_->Advertise<gz_geometry_msgs::Vector3dStamped>("~/"+ model_->GetName() + "/gazebo/lps", 1);
+		lps_pub_ = node_handle_->Advertise<gz_geometry_msgs::Vector3dStamped>(model_->GetName() + "/gazebo/lps", 1);
 
-		gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
-		connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/"+ model_->GetName() + "/gazebo/lps");
-		connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/gazebo/lps");
-		connect_gazebo_to_ros_topic_msg.set_msgtype(gz_std_msgs::ConnectGazeboToRosTopic::VECTOR_3D_STAMPED);
-		connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,true);
+		// gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
+		// connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/"+ model_->GetName() + "/gazebo/lps");
+		// connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/gazebo/lps");
+		// connect_gazebo_to_ros_topic_msg.set_msgtype(gz_std_msgs::ConnectGazeboToRosTopic::VECTOR_3D_STAMPED);
+		// connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,true);
 	}
 }
