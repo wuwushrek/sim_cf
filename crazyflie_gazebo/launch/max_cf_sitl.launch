@@ -53,6 +53,7 @@
   <arg name="y_4" default="0.0" />
   <arg name="z_4" default="0.03" />
 
+  <!-- Arguments for fifth Crazyflie -->
   <arg name="tf_prefix_5" default="$(arg cfPrefix)5" />
   <arg name="color_prop_front_5" default="Red" />
   <arg name="color_prop_back_5" default="Red" />
@@ -60,6 +61,7 @@
   <arg name="y_5" default="0.5" />
   <arg name="z_5" default="0.03" />
 
+  <!-- Arguments for sixth Crazyflie -->
   <arg name="tf_prefix_6" default="$(arg cfPrefix)6" />
   <arg name="color_prop_front_6" default="Red" />
   <arg name="color_prop_back_6" default="Red" />
@@ -67,6 +69,7 @@
   <arg name="y_6" default="1.0" />
   <arg name="z_6" default="0.03" />
 
+  <!-- Arguments for seventh Crazyflie -->
   <arg name="tf_prefix_7" default="$(arg cfPrefix)7" />
   <arg name="color_prop_front_7" default="Red" />
   <arg name="color_prop_back_7" default="Red" />
@@ -79,9 +82,11 @@
       (even when Gazebo is started through roslaunch) -->
   <arg name="verbose" default="true"/>
 
+  <!-- Update model/plugin paths -->
   <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find crazyflie_gazebo)/models"/>
   <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find crazyflie_gazebo)/models"/>
 
+  <!--  Spawn gazebo world in paused mode -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find crazyflie_gazebo)/worlds/$(arg world_name).world"/>
     <arg name="debug" value="$(arg debug)" />
@@ -90,6 +95,7 @@
     <arg name="verbose" value="$(arg verbose)"/>
   </include>
 
+  <!-- Spawn all the seven crazyflie models (This just launchs all the sensors pub/sub and graphical models) -->
   <group ns="$(arg cfPrefix)1">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
       <arg name="is_hitl" value="$(arg is_hitl)"/>
@@ -188,16 +194,16 @@
     </include>
   </group>
 
-
+  <!-- Launch the first cf handler that will handle cf1 to cf4 -->
   <group ns="handler1">
     <include file="$(find crazyflie_gazebo)/launch/spawn_plugin.launch">
       <!--<arg name="handlerName" value="$(arg handerName)" />-->
 
       <arg name="plugin_name" value="cfHandler1" />
       <arg name="nbQuads" value="4" />
-      <arg name="cfPrefix" value="$(arg cfPrefix)" />
-      <arg name="udpPort" value="19950" />
-      <arg name="firstIndex" value="1" />
+      <arg name="cfPrefix" value="$(arg cfPrefix)" /> 
+      <arg name="udpPort" value="19950" /> <!--Port for the first 4 cfs -->
+      <arg name="firstIndex" value="1" /> <!-- First crazyflie index -->
 
       <arg name="enable_logging" value="$(arg enable_logging)"/>
       <arg name="enable_parameters" value="$(arg enable_parameters)"/>
@@ -211,13 +217,14 @@
     </include>
   </group>
 
+  <!-- Launch the second cf handler that will handle cf5 to cf7 -->
   <group ns="handler2">
     <include file="$(find crazyflie_gazebo)/launch/spawn_plugin.launch">
       <arg name="plugin_name" value="cfHandler2" />
       <arg name="nbQuads" value="3" />
       <arg name="cfPrefix" value="$(arg cfPrefix)" />
-      <arg name="udpPort" value="19951" />
-      <arg name="firstIndex" value="5" />
+      <arg name="udpPort" value="19951" /> <!--Port for the first 4 cfs -->
+      <arg name="firstIndex" value="5" /> <!-- First crazyflie index of this handler-->
 
       <arg name="enable_logging" value="$(arg enable_logging)"/>
       <arg name="enable_parameters" value="$(arg enable_parameters)"/>
