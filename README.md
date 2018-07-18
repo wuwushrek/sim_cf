@@ -88,3 +88,4 @@ Then launch cf2 with the following command :
 ## Crazyflie_gazebo package
 
 Follow documentation on https://github.com/wuwushrek/sim_cf/tree/master/crazyflie_gazebo in order to communicate with the SITL/HITL instance and start playing with the simulation environment.
+![alt text](https://github.com/wuwushrek/sim_cf/blob/multi-uav-final/7cfs.gif)
