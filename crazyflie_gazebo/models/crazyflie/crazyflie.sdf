@@ -38,7 +38,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie.dae</uri>
+            <uri>/home/cosynus3/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -198,29 +198,12 @@
           <izz>9.01687e-06</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_0_collision'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <geometry>
-          <cylinder>
-            <length>0.005</length>
-            <radius>0.0225</radius>
-          </cylinder>
-        </geometry>
-        <surface>
-          <contact>
-            <ode/>
-          </contact>
-          <friction>
-            <ode/>
-          </friction>
-        </surface>
-      </collision>
       <visual name='rotor_0_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/cosynus3/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -264,29 +247,12 @@
           <izz>9.01687e-06</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_1_collision'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <geometry>
-          <cylinder>
-            <length>0.005</length>
-            <radius>0.0225</radius>
-          </cylinder>
-        </geometry>
-        <surface>
-          <contact>
-            <ode/>
-          </contact>
-          <friction>
-            <ode/>
-          </friction>
-        </surface>
-      </collision>
       <visual name='rotor_1_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/cosynus3/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -330,29 +296,12 @@
           <izz>9.01687e-06</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_2_collision'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <geometry>
-          <cylinder>
-            <length>0.005</length>
-            <radius>0.0225</radius>
-          </cylinder>
-        </geometry>
-        <surface>
-          <contact>
-            <ode/>
-          </contact>
-          <friction>
-            <ode/>
-          </friction>
-        </surface>
-      </collision>
       <visual name='rotor_2_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/cosynus3/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -396,29 +345,12 @@
           <izz>9.01687e-06</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_3_collision'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <geometry>
-          <cylinder>
-            <length>0.005</length>
-            <radius>0.0225</radius>
-          </cylinder>
-        </geometry>
-        <surface>
-          <contact>
-            <ode/>
-          </contact>
-          <friction>
-            <ode/>
-          </friction>
-        </surface>
-      </collision>
       <visual name='rotor_3_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>/home/franck/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
+            <uri>/home/cosynus3/catkin_ws/src/sim_cf/crazyflie_gazebo/models/rotors_description/meshes/crazyflie_prop.dae</uri>
           </mesh>
         </geometry>
         <material>
@@ -525,6 +457,7 @@
       <robotNamespace>/</robotNamespace>
       <linkName>//imu_link</linkName>
       <imuTopic>gazebo/imu</imuTopic>
+      <rate>500</rate>
       <gyroscopeNoiseDensity>0.00017667</gyroscopeNoiseDensity>
       <gyroscopeRandomWalk>9.2542e-06</gyroscopeRandomWalk>
       <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
@@ -557,26 +490,6 @@
       <robotNamespace>/</robotNamespace>
       <lpsStdDev>0.0</lpsStdDev>
       <rate>100</rate>
-    </plugin>
-    <plugin name='crtp_interface' filename='libgazebo_crtp_interface.so'>
-      <robotNamespace>/</robotNamespace>
-      <imuSubTopic>gazebo/imu</imuSubTopic>
-      <magnetometerTopic>gazebo/magnetic_field</magnetometerTopic>
-      <pressureTopic>gazebo/air_pressure</pressureTopic>
-      <motorSpeedsPubTopic>gazebo/command/motor_speed</motorSpeedsPubTopic>
-      <crazyflieURI>INADDR_ANY://19950</crazyflieURI>
-      <rollTrim>0</rollTrim>
-      <pitchTrim>0</pitchTrim>
-      <enableLogging>true</enableLogging>
-      <useRosTime>true</useRosTime>
-      <enableLoggingImu>true</enableLoggingImu>
-      <enableLoggingTemperature>false</enableLoggingTemperature>
-      <enableLoggingMagneticField>false</enableLoggingMagneticField>
-      <enableLoggingPressure>false</enableLoggingPressure>
-      <enableLoggingBattery>false</enableLoggingBattery>
-      <enableLoggingPackets>false</enableLoggingPackets>
-      <enableParameters>true</enableParameters>
-      <rotorCount>4</rotorCount>
     </plugin>
     <static>0</static>
     <plugin name='odometry_sensorgt' filename='librotors_gazebo_odometry_plugin.so'>

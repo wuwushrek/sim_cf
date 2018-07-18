@@ -14,6 +14,7 @@
   <arg name="cfPrefix" default="crazyflie" />
   <arg name="udpPort" default="19950"/>
   <arg name="handerName" default="handler1"/>
+  <arg name="firstIndex" default="1"/>
 
   <!-- Crazyflie arguments -->
   <arg name="is_hitl" default="false"/>
@@ -104,6 +105,7 @@
       <arg name="nbQuads" value="$(arg nbQuads)" />
       <arg name="cfPrefix" value="$(arg cfPrefix)" />
       <arg name="udpPort" value="$(arg udpPort)" />
+      <arg name="firstIndex" value="$(arg firstIndex)" />
 
       <arg name="enable_logging" value="$(arg enable_logging)"/>
       <arg name="enable_parameters" value="$(arg enable_parameters)"/>

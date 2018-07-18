@@ -261,7 +261,7 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
 
   if (m_enableParameters)
   {
-    ROS_INFO("[%s] Requesting parameters...", m_tf_prefix.c_str());
+    // ROS_INFO("[%s] Requesting parameters...", m_tf_prefix.c_str());
     m_cf.requestParamToc();
     for (auto iter = m_cf.paramsBegin(); iter != m_cf.paramsEnd(); ++iter) {
       auto entry = *iter;
@@ -269,31 +269,31 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
       switch (entry.type) {
         case Crazyflie::ParamTypeUint8:
         ros::param::set(paramName, m_cf.getParam<uint8_t>(entry.id));
-        ROS_INFO("%s (uint8_t) : %d" , paramName.c_str() , (int) m_cf.getParam<uint8_t>(entry.id));
+        // ROS_INFO("%s (uint8_t) : %d" , paramName.c_str() , (int) m_cf.getParam<uint8_t>(entry.id));
         break;
         case Crazyflie::ParamTypeInt8:
         ros::param::set(paramName, m_cf.getParam<int8_t>(entry.id));
-        ROS_INFO("%s (int8_t) : %d" , paramName.c_str() , (int) m_cf.getParam<int8_t>(entry.id));
+        // ROS_INFO("%s (int8_t) : %d" , paramName.c_str() , (int) m_cf.getParam<int8_t>(entry.id));
         break;
         case Crazyflie::ParamTypeUint16:
         ros::param::set(paramName, m_cf.getParam<uint16_t>(entry.id));
-        ROS_INFO("%s (uint16_t) : %d" , paramName.c_str() , (int) m_cf.getParam<uint16_t>(entry.id));
+        // ROS_INFO("%s (uint16_t) : %d" , paramName.c_str() , (int) m_cf.getParam<uint16_t>(entry.id));
         break;
         case Crazyflie::ParamTypeInt16:
         ros::param::set(paramName, m_cf.getParam<int16_t>(entry.id));
-        ROS_INFO("%s (int16_t) : %d" , paramName.c_str() , (int) m_cf.getParam<int16_t>(entry.id));
+        // ROS_INFO("%s (int16_t) : %d" , paramName.c_str() , (int) m_cf.getParam<int16_t>(entry.id));
         break;
         case Crazyflie::ParamTypeUint32:
         ros::param::set(paramName, (int)m_cf.getParam<uint32_t>(entry.id));
-        ROS_INFO("%s (uint32_t) : %d" , paramName.c_str() , (int) m_cf.getParam<uint32_t>(entry.id));
+        // ROS_INFO("%s (uint32_t) : %d" , paramName.c_str() , (int) m_cf.getParam<uint32_t>(entry.id));
         break;
         case Crazyflie::ParamTypeInt32:
         ros::param::set(paramName, m_cf.getParam<int32_t>(entry.id));
-        ROS_INFO("%s (int32_t) : %d" , paramName.c_str() , (int) m_cf.getParam<int32_t>(entry.id));
+        // ROS_INFO("%s (int32_t) : %d" , paramName.c_str() , (int) m_cf.getParam<int32_t>(entry.id));
         break;
         case Crazyflie::ParamTypeFloat:
         ros::param::set(paramName, m_cf.getParam<float>(entry.id));
-        ROS_INFO("%s (float) : %f" , paramName.c_str() ,  m_cf.getParam<float>(entry.id));
+        // ROS_INFO("%s (float) : %f" , paramName.c_str() ,  m_cf.getParam<float>(entry.id));
         break;
       }
     }
@@ -306,7 +306,7 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
     std::function<void(const crtpPlatformRSSIAck*)> cb_ack = std::bind(&CrazyflieROS::onEmptyAck, this, std::placeholders::_1);
     m_cf.setEmptyAckCallback(cb_ack);
 
-    ROS_INFO("Requesting Logging variables...");
+    // ROS_INFO("Requesting Logging variables...");
     m_cf.requestLogToc();
 
     std::for_each(m_cf.logVariablesBegin(), m_cf.logVariablesEnd(),
@@ -315,28 +315,28 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
         std::string logName = entry.group + "." + entry.name + " (";
         switch (entry.type) {
           case Crazyflie::LogTypeUint8:
-          ROS_INFO("%s uint8)", logName.c_str());
+          // ROS_INFO("%s uint8)", logName.c_str());
           break;
           case Crazyflie::LogTypeInt8:
-          ROS_INFO("%s int8)", logName.c_str());
+          // ROS_INFO("%s int8)", logName.c_str());
           break;
           case Crazyflie::LogTypeUint16:
-          ROS_INFO("%s uint16)", logName.c_str());
+          // ROS_INFO("%s uint16)", logName.c_str());
           break;
           case Crazyflie::LogTypeInt16:
-          ROS_INFO("%s int16)", logName.c_str());
+          // ROS_INFO("%s int16)", logName.c_str());
           break;
           case Crazyflie::LogTypeUint32:
-          ROS_INFO("%s uint32)", logName.c_str());
+          // ROS_INFO("%s uint32)", logName.c_str());
           break;
           case Crazyflie::LogTypeInt32:
-          ROS_INFO("%s int32)", logName.c_str());
+          // ROS_INFO("%s int32)", logName.c_str());
           break;
           case Crazyflie::LogTypeFloat:
-          ROS_INFO("%s float)", logName.c_str());
+          // ROS_INFO("%s float)", logName.c_str());
           break;
           case Crazyflie::LogTypeFP16:
-          ROS_INFO("%s fp16)", logName.c_str());
+          // ROS_INFO("%s fp16)", logName.c_str());
           break;
         }
       }
@@ -387,7 +387,7 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
         }, cbStats));
       logStatsData->start(200);*/
 
-      /*std::function<void(uint32_t, logState*)> cbQuadState = std::bind(&CrazyflieROS::onLogStateData, this, std::placeholders::_1, std::placeholders::_2);
+/*      std::function<void(uint32_t, logState*)> cbQuadState = std::bind(&CrazyflieROS::onLogStateData, this, std::placeholders::_1, std::placeholders::_2);
       logStateData.reset(new LogBlock<logState>(
         &m_cf,{
           {"stateEstimate", "x"},
@@ -423,7 +423,7 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
 
     }
 
-    ROS_INFO("[%s] Requesting memories...", m_tf_prefix.c_str());
+    // ROS_INFO("[%s] Requesting memories...", m_tf_prefix.c_str());
     m_cf.requestMemoryToc();
 
     auto end = std::chrono::system_clock::now();

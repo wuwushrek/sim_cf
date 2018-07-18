@@ -20,6 +20,7 @@
   <xacro:property name="nbQuads" value="$(arg nbQuads)" />
   <xacro:property name="cfPrefix" value="$(arg cfPrefix)" />
   <xacro:property name="udpPort" value="$(arg udpPort)" />
+  <xacro:property name="firstIndex" value="$(arg firstIndex)" />
 
   <xacro:include filename="$(arg rotors_description_dir)/urdf/component_snippets.xacro"/>
 
@@ -46,6 +47,7 @@
         <nbQuads>${nbQuads}</nbQuads>
         <cfPrefix>${cfPrefix}</cfPrefix>
         <udpPort>${udpPort}</udpPort>
+        <firstIndex>${firstIndex}</firstIndex>
       </plugin>
   </gazebo>
 

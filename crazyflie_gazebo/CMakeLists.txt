@@ -291,11 +291,12 @@ add_custom_target(crazyflie_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/cr
 set(nbQuads "1")
 set(cfPrefix "cf")
 set(udpPort "19950")
+set(firstIndex "1")
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
-  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/cfHandler_base.urdf  ${rotors_description_dir}/urdf/cfHandler_base.xacro nbQuads:=${nbQuads} cfPrefix:=${cfPrefix} enable_parameters:=${enable_parameters} enable_logging:=${enable_logging} udpPort:=${udpPort} rotors_description_dir:=${rotors_description_dir} use_ros_time:=${use_ros_time} enable_logging_battery:=${enable_logging_battery} enable_logging_pressure:=${enable_logging_pressure} enable_logging_temperature:=${enable_logging_temperature} enable_logging_imu:=${enable_logging_imu} enable_logging_packets:=${enable_logging_packets} enable_logging_magnetic_field:=${enable_logging_magnetic_field}
+  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/cfHandler_base.urdf  ${rotors_description_dir}/urdf/cfHandler_base.xacro nbQuads:=${nbQuads} cfPrefix:=${cfPrefix} enable_parameters:=${enable_parameters} enable_logging:=${enable_logging} udpPort:=${udpPort} firstIndex:=${firstIndex} rotors_description_dir:=${rotors_description_dir} use_ros_time:=${use_ros_time} enable_logging_battery:=${enable_logging_battery} enable_logging_pressure:=${enable_logging_pressure} enable_logging_temperature:=${enable_logging_temperature} enable_logging_imu:=${enable_logging_imu} enable_logging_packets:=${enable_logging_packets} enable_logging_magnetic_field:=${enable_logging_magnetic_field}
   COMMAND gz sdf -p  ${rotors_description_dir}/urdf/cfHandler_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
   COMMAND rm -f ${rotors_description_dir}/urdf/cfHandler_base.urdf
   DEPENDS ${rotors_description_dir}/urdf/cfHandler_base.xacro

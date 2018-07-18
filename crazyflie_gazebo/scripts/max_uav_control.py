@@ -5,12 +5,21 @@ import crazyflie
 import time
 import uav_trajectory
 
+import sys
+
 if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print "Wrong number of arguments !"
+        print "Example : python max_uav_control.py [nbQuads] [tfPrefix]"
+        sys.exit()
+
+    nbQuads = int(sys.argv[1])
+    cfPrefix = str(sys.argv[2])
+
     rospy.init_node('test_high_level_multi_cf')
-    listcf = [crazyflie.Crazyflie("cf1", "/cf1") , crazyflie.Crazyflie("cf2", "/cf2") , crazyflie.Crazyflie("cf3", "/cf3") , crazyflie.Crazyflie("cf_11", "/cf_11")]
-    # listcf = [crazyflie.Crazyflie("cf1", "/cf1") , crazyflie.Crazyflie("cf2", "/cf2") , crazyflie.Crazyflie("cf3", "/cf3") , crazyflie.Crazyflie("cf_11", "/cf_11")]
-    #cf1 = crazyflie.Crazyflie("cf1", "/cf1")
-    #cf2 = crazyflie.Crazyflie("cf2", "/cf2")
+    listcf = list()
+    for iter in range(nbQuads):
+        listcf.append(crazyflie.Crazyflie(cfPrefix+str(iter+1),"/"+cfPrefix+str(iter+1)))
 
     for cf_i in listcf :
         cf_i.setParam("commander/enHighLevel", 1)

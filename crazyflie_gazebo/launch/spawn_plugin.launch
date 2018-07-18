@@ -20,6 +20,7 @@
   <arg name="nbQuads" default="1" />
   <arg name="cfPrefix" default="cf" />
   <arg name="udpPort" default="19950" />
+  <arg name="firstIndex" default="1" />
 
 
 
@@ -38,7 +39,8 @@
     enable_logging_packets:=$(arg enable_logging_packets)
     nbQuads:=$(arg nbQuads)
     cfPrefix:=$(arg cfPrefix)
-    udpPort:=$(arg udpPort) "
+    udpPort:=$(arg udpPort)
+    firstIndex:=$(arg firstIndex) --inorder"
   />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->

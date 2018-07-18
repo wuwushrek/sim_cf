@@ -86,7 +86,8 @@ namespace gazebo {
 			world_(nullptr),
 			isPluginOn(true),
 			nbQuads(kDefaultCfNbQuads),
-			port(kDefaultCfPort)
+			port(kDefaultCfPort),
+			first_index(1)
 			{}
 		~GazeboCfHandler();
 
@@ -96,6 +97,7 @@ namespace gazebo {
 
 	private:
 		int nbQuads;
+		int first_index;
 		std::string namespace_;
 
 		std::string motor_velocity_reference_pub_topic_;

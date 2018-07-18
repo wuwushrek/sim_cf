@@ -8,7 +8,7 @@ import uav_trajectory
 if __name__ == '__main__':
     rospy.init_node('test_high_level')
 
-    cf = crazyflie.Crazyflie("crazyflie", "/crazyflie")
+    cf = crazyflie.Crazyflie("cf1", "/cf1")
 
     cf.setParam("commander/enHighLevel", 1)
 

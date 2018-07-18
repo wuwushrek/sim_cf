@@ -11,9 +11,10 @@
 
   <!--  Handler Arguments       -->
   <arg name="nbQuads" default="1" />
-  <arg name="cfPrefix" default="crazyflie" />
+  <arg name="cfPrefix" default="cf" />
   <arg name="udpPort" default="19950"/>
   <arg name="handerName" default="handler1"/>
+  <arg name="firstIndex" default="1"/>
 
   <!-- Crazyflie arguments -->
   <arg name="is_hitl" default="false"/>
@@ -27,7 +28,7 @@
   <arg name="enable_logging_battery" default="false" />
   <arg name="enable_logging_packets" default="false" />
 
-  <arg name="tf_prefix_1" default="$(arg cfPrefix)" />
+  <arg name="tf_prefix_1" default="$(arg cfPrefix)1" />
   <arg name="color_prop_front_1" default="Blue" />
   <arg name="color_prop_back_1" default="Red" />
   <arg name="x_1" default="0.0" />
@@ -50,7 +51,7 @@
   </include>
 
   <!-- Spawn the crazyflie model -->
-  <group ns="$(arg cfPrefix)">
+  <group ns="$(arg cfPrefix)1">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
       <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
@@ -71,6 +72,7 @@
       <arg name="nbQuads" value="$(arg nbQuads)" />
       <arg name="cfPrefix" value="$(arg cfPrefix)" />
       <arg name="udpPort" value="$(arg udpPort)" />
+      <arg name="firstIndex" value="$(arg firstIndex)" />
 
       <arg name="enable_logging" value="$(arg enable_logging)"/>
       <arg name="enable_parameters" value="$(arg enable_parameters)"/>

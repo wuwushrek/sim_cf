@@ -65,6 +65,7 @@ void GazeboCfHandler::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
 
 	getSdfParam<int>(_sdf,"udpPort", port , port);
 	getSdfParam<int>(_sdf,"nbQuads", nbQuads , nbQuads);
+	getSdfParam<int>(_sdf,"firstIndex", first_index , first_index);
 
 	// open socket in UDP mode
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -81,11 +82,13 @@ void GazeboCfHandler::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
     	gzerr << "Bind socket failed " << std::endl;
     	return;
   	}
-	
+	addrlen_rcv = sizeof(remaddr_rcv);
+
+	// Init consumer producer queue
 	cfToInitialize =  moodycamel::ReaderWriterQueue<int>(MAX_QUADS);
 	subPubToInitialize = moodycamel::ReaderWriterQueue<int>(MAX_QUADS);
 	m_queueSend = moodycamel::BlockingReaderWriterQueue<SensorsData>(6);
-	addrlen_rcv = sizeof(remaddr_rcv);
+
 	for (uint8_t i = 0 ; i< nbQuads ; i++){
 		addrlen[i] = sizeof(remaddr[i]);
 		isInit[i] = false;
@@ -121,22 +124,20 @@ void GazeboCfHandler::ImuCallback(ImuPtr& imu_msg , int index){
 	SensorsData msg;
 	msg.index = index;
 	memcpy(msg.data , (const uint8_t*) &m_imu_info , sizeof(m_imu_info));
-	// gzmsg << " " << m_imu_info.acc.x << " ; "<< m_imu_info.acc.y << " ; " << m_imu_info.acc.z << std::endl;
-	//cfROS_[index]->sendSensorsPacket((const uint8_t*) &m_imu_info , sizeof(m_imu_info));
 	m_queueSend.enqueue(msg);
-	// static int imu_msg_count = 0;
-	// if(imu_msg_count >= 1) {
-	// 	gzmsg << "{ "
-	// 	", xacc: " << imu_msg->linear_acceleration().x() <<
-	// 	", yacc: " << imu_msg->linear_acceleration().y() <<
-	// 	", zacc: " << imu_msg->linear_acceleration().z() <<
-	// 	", xgyro: " << imu_msg->angular_velocity().x() <<
-	// 	", ygyro: " << imu_msg->angular_velocity().y() <<
-	// 	", zgyro: " << imu_msg->angular_velocity().z() <<
-	// 	" }" << std::endl;
-	// 	imu_msg_count = 0;
-	// }
-	// imu_msg_count++;
+	/*static int imu_msg_count = 0;
+	if(imu_msg_count >= 1) {
+		gzmsg << "{ "
+		", xacc: " << imu_msg->linear_acceleration().x() <<
+		", yacc: " << imu_msg->linear_acceleration().y() <<
+		", zacc: " << imu_msg->linear_acceleration().z() <<
+		", xgyro: " << imu_msg->angular_velocity().x() <<
+		", ygyro: " << imu_msg->angular_velocity().y() <<
+		", zgyro: " << imu_msg->angular_velocity().z() <<
+		" }" << std::endl;
+		imu_msg_count = 0;
+	}
+	imu_msg_count++;*/
 }
 
 void GazeboCfHandler::FluidPressureCallback(FluidPressurePtr& press_msg , int index){
@@ -155,19 +156,18 @@ void GazeboCfHandler::FluidPressureCallback(FluidPressurePtr& press_msg , int in
 	SensorsData msg;
 	msg.index = index;
 	memcpy(msg.data , (const uint8_t*) &m_baro_info , sizeof(m_baro_info));
-	// // cfROS_[index]->sendSensorsPacket((const uint8_t*) &m_baro_info , sizeof(m_baro_info));
 	m_queueSend.enqueue(msg);
-	// static int press_msg_count = 0;
-	// if(press_msg_count >= 100) {
-	// 	gzmsg << "{ "
-	// 	"time_usec: " << press_msg->header().stamp().sec() <<
-	// 	", fluid pressure(Pa) : " << press_msg->fluid_pressure() <<
-	// 	", height(m) : " << height_geometric_m <<
-	// 	", temperature (K): " << temperature_at_altitude_kelvin <<
-	// 	" }" << std::endl;
-	// 	press_msg_count = 0;
-	// }
-	// press_msg_count++;
+	/*static int press_msg_count = 0;
+	if(press_msg_count >= 100) {
+		gzmsg << "{ "
+		"time_usec: " << press_msg->header().stamp().sec() <<
+		", fluid pressure(Pa) : " << press_msg->fluid_pressure() <<
+		", height(m) : " << height_geometric_m <<
+		", temperature (K): " << temperature_at_altitude_kelvin <<
+		" }" << std::endl;
+		press_msg_count = 0;
+	}
+	press_msg_count++;*/
 }
 
 void GazeboCfHandler::MagneticFieldCallback(MagneticFieldPtr& mag_msg , int index){
@@ -184,7 +184,6 @@ void GazeboCfHandler::MagneticFieldCallback(MagneticFieldPtr& mag_msg , int inde
 	msg.index = index;
 	memcpy(msg.data , (const uint8_t*) &m_mag_info , sizeof(m_mag_info));
 	m_queueSend.enqueue(msg);
-	//cfROS_[index]->sendSensorsPacket((const uint8_t*) &m_mag_info , sizeof(m_mag_info));
 	/*static int mag_msg_count = 0;
 	if(mag_msg_count >= 100) {
 		gzmsg << "{ "
@@ -200,11 +199,6 @@ void GazeboCfHandler::MagneticFieldCallback(MagneticFieldPtr& mag_msg , int inde
 
 void GazeboCfHandler::LpsCallback(LpsPtr& lps_msg , int index){
 	// Just need to transfer to the fcu the external position
-	// gzdbg << "size of x : " << sizeof(lps_msg->position().x()) << std::endl;
-	/*cfROS_[index]->sendExternalPositionUpdate(
-		static_cast<float>(lps_msg->position().x()),
-		static_cast<float>(lps_msg->position().y()),
-		static_cast<float>(lps_msg->position().z()));*/
 	struct pos_s pos = {
 		.header = crtp(CRTP_PORT_SETPOINT_SIM, 0),
 		.type = SENSOR_POS_SIM,
@@ -218,7 +212,6 @@ void GazeboCfHandler::LpsCallback(LpsPtr& lps_msg , int index){
 
 bool GazeboCfHandler::send(const uint8_t* data , uint32_t length , int index)
 {	
-	// std::cout << "header : " << (int) data[0] << std::endl; 
 	int transferred = sendto(fd, data, length, 0, (struct sockaddr *) &(remaddr[index]), addrlen[index]);
 	if (transferred <= 0)
 		throw std::runtime_error(strerror(errno));
@@ -228,24 +221,18 @@ bool GazeboCfHandler::send(const uint8_t* data , uint32_t length , int index)
 void GazeboCfHandler::recvThread()
 {
 	uint8_t buf[35];
-	//auto start = std::chrono::system_clock::now();
 	while(isPluginOn)
 	{
 		int len = recvfrom(fd, buf, sizeof(buf), 0, (struct sockaddr *) &remaddr_rcv, &addrlen_rcv);
 		if (len <= 0 )
 			continue;
-		//auto end = std::chrono::system_clock::now();
-    	//std::chrono::duration<double> elapsedSeconds = end-start;
-		//ROS_INFO("Recv call ! %f" , elapsedSeconds.count());
-		//start = end;
-		uint8_t cf_id = buf[0]-1;
-		// handleMessage(&buf[1] , len-1 , cf_id);
+		uint8_t cf_id = buf[0]-first_index;
 		if (!socketInit[cf_id] && buf[1] == 0xF3 && len == 2){
 			remaddr[cf_id] = remaddr_rcv;
 			addrlen[cf_id] = addrlen_rcv;
 			socketInit[cf_id] = true;
 			// Send response to SITL instance
-			uint8_t data[2] = {(uint8_t)(cf_id+1) , 0xF3};
+			uint8_t data[2] = {(uint8_t)(cf_id+first_index) , 0xF3};
 			send(data , sizeof(data) , cf_id);
 			cfToInitialize.enqueue(cf_id);
 		}
@@ -302,37 +289,37 @@ void GazeboCfHandler::initializeSubsAndPub()
 
 	// Handle sensors callback function
 	if (index == 0){
-		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_1 , this);
-		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_1, this );
-		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_1, this );
-		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_1, this );
+		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_1 , this);
+		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_1, this );
+		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_1, this );
+		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_1, this );
 	}else if(index == 1){
-		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_2, this);
-		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_2, this );
-		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_2, this );
-		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_2, this );
+		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_2, this);
+		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_2, this );
+		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_2, this );
+		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_2, this );
 	}else if(index == 2){
-		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_3 , this);
-		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_3, this );
-		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_3, this );
-		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_3, this );
+		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_3 , this);
+		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_3, this );
+		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_3, this );
+		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_3, this );
 	}else if (index == 3){
-		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_4, this);
-		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_4, this );
-		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_4, this );
-		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_4, this );
+		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_4, this);
+		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_4, this );
+		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_4, this );
+		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_4, this );
 	} else if(index == 4){
-		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_5 , this);
-		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_5, this);
-		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_5, this);
-		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_5, this );
+		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_5 , this);
+		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_5, this);
+		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_5, this);
+		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_5, this );
 	} else if(index == 5){
-		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_6 , this);
-		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_6, this);
-		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_6, this);
-		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+1) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_6, this );
+		imu_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + imu_sub_topic_, &GazeboCfHandler::ImuCallback_6 , this);
+		magnetic_field_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + magnetic_field_sub_topic_, &GazeboCfHandler::MagneticFieldCallback_6, this);
+		fluid_pressure_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + fluid_pressure_sub_topic_, &GazeboCfHandler::FluidPressureCallback_6, this);
+		lps_sub_[index] = node_handle_->Subscribe(cf_prefix + std::to_string(index+first_index) + "/" + lps_sub_topic_, &GazeboCfHandler::LpsCallback_6, this );
 	}
-	motor_velocity_reference_pub_[index] = node_handle_->Advertise<gz_mav_msgs::CommandMotorSpeed>(cf_prefix + std::to_string(index+1) + motor_velocity_reference_pub_topic_, 1);
+	motor_velocity_reference_pub_[index] = node_handle_->Advertise<gz_mav_msgs::CommandMotorSpeed>(cf_prefix + std::to_string(index+first_index) + motor_velocity_reference_pub_topic_, 1);
 	
 	isInit[index] = true;
 	gzmsg << "Init subs and Pubs done !" << std::endl;
@@ -345,14 +332,12 @@ void GazeboCfHandler::initializeCf(ros::NodeHandle &n)
 	if (!succeeded)
 		return;
 
-	//std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-
 	// create recv and send function instance
 	std::function<void(const uint8_t* , uint32_t)> sendDataFunc = boost::bind(&GazeboCfHandler::send , this , _1, _2, index);
 	std::function<void(Crazyradio::Ack& , int64_t)> recvDataFunc = boost::bind(&GazeboCfHandler::recv , this , _1 ,_2, index);
 
 	cfROS_[index] = new CrazyflieROS(
-			cf_prefix + std::to_string(index+1),
+			cf_prefix + std::to_string(index+first_index),
 			enable_logging,
 			enable_parameters,
 			use_ros_time,
