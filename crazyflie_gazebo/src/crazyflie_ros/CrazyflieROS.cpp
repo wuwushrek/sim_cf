@@ -25,7 +25,8 @@ CrazyflieROS::CrazyflieROS(
   bool enable_logging_magnetic_field,
   bool enable_logging_pressure,
   bool enable_logging_battery,
-  bool enable_logging_packets)
+  bool enable_logging_packets,
+  bool enable_logging_pose)
 : m_cf(cf_uri,rosLogger)
 , m_tf_prefix(tf_prefix)
 , m_isEmergency(false)
@@ -41,6 +42,7 @@ CrazyflieROS::CrazyflieROS(
 , m_enable_logging_pressure(enable_logging_pressure)
 , m_enable_logging_battery(enable_logging_battery)
 , m_enable_logging_packets(enable_logging_packets)
+, m_enable_logging_pose(enable_logging_pose)
 , m_serviceEmergency()
 , m_serviceUpdateParams()
 , m_serviceSetGroupMask()
@@ -99,6 +101,7 @@ CrazyflieROS::CrazyflieROS(
 , m_enable_logging_pressure(enable_logging_pressure)
 , m_enable_logging_battery(enable_logging_battery)
 , m_enable_logging_packets(enable_logging_packets)
+, m_enable_logging_pose(true)
 , m_serviceEmergency()
 , m_serviceUpdateParams()
 , m_serviceSetGroupMask()
@@ -256,6 +259,7 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
   std::function<void(float)> cb_lq = std::bind(&CrazyflieROS::onLinkQuality, this, std::placeholders::_1);
   m_cf.setLinkQualityCallback(cb_lq);
 
+  // Just used during simulatiion
   std::function<void(const crtpImuSimDataResponse*)> cb_imu_res = std::bind(&CrazyflieROS::onImuSimDataResponse, this, std::placeholders::_1);
   m_cf.setImuSimResponseCallback(cb_imu_res);
 
@@ -386,18 +390,19 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
           {"crtp", "txRate"},
         }, cbStats));
       logStatsData->start(200);*/
-
-/*      std::function<void(uint32_t, logState*)> cbQuadState = std::bind(&CrazyflieROS::onLogStateData, this, std::placeholders::_1, std::placeholders::_2);
-      logStateData.reset(new LogBlock<logState>(
-        &m_cf,{
-          {"stateEstimate", "x"},
-          {"stateEstimate", "y"},
-          {"stateEstimate", "z"},
-          {"stabilizer", "roll"},
-          {"stabilizer", "pitch"},
-          {"stabilizer", "yaw"},
-        }, cbQuadState));
-      logStateData->start(1);*/
+      if (m_enable_logging_pose){
+        std::function<void(uint32_t, logState*)> cbQuadState = std::bind(&CrazyflieROS::onLogStateData, this, std::placeholders::_1, std::placeholders::_2);
+        logStateData.reset(new LogBlock<logState>(
+          &m_cf,{
+            {"stateEstimate", "x"},
+            {"stateEstimate", "y"},
+            {"stateEstimate", "z"},
+            {"stabilizer", "roll"},
+            {"stabilizer", "pitch"},
+            {"stabilizer", "yaw"},
+          }, cbQuadState));
+        logStateData->start(1);
+      }
 
       // custom log blocks
       size_t i = 0;
@@ -943,7 +948,8 @@ bool CrazyflieServer::add_crazyflie(
     req.enable_logging_magnetic_field,
     req.enable_logging_pressure,
     req.enable_logging_battery,
-    req.enable_logging_packets);
+    req.enable_logging_packets,
+    req.enable_logging_pose);
 
   m_crazyflies[req.uri] = cf;
 

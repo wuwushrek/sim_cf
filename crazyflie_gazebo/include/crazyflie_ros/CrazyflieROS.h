@@ -92,7 +92,8 @@ public:
 		bool enable_logging_magnetic_field,
 		bool enable_logging_pressure,
 		bool enable_logging_battery,
-		bool enable_logging_packets);
+		bool enable_logging_packets,
+		bool enable_logging_pose);
 
 /*************** Additions/Modifications for Simulation ****************/
 	CrazyflieROS(
@@ -289,6 +290,7 @@ private:
 	bool m_enable_logging_pressure;
 	bool m_enable_logging_battery;
 	bool m_enable_logging_packets;
+	bool m_enable_logging_pose;
 
 	ros::ServiceServer m_serviceEmergency;
 	ros::ServiceServer m_serviceUpdateParams;

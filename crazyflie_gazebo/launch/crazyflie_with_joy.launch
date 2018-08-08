@@ -21,14 +21,14 @@
   <arg name="enable_logging" default="true" />
   <arg name="enable_parameters" default="true" />
   <arg name="use_ros_time" default="true" />
-  <arg name="enable_logging_imu" default="false" />
+  <arg name="enable_logging_imu" default="true" />
   <arg name="enable_logging_temperature" default="false" />
   <arg name="enable_logging_magnetic_field" default="false" />
   <arg name="enable_logging_pressure" default="false" />
   <arg name="enable_logging_battery" default="false" />
   <arg name="enable_logging_packets" default="false" />
 
-  <arg name="tf_prefix_1" default="$(arg cfPrefix)" />
+  <arg name="tf_prefix_1" default="$(arg cfPrefix)1" />
   <arg name="color_prop_front_1" default="Blue" />
   <arg name="color_prop_back_1" default="Blue" />
   <arg name="x_1" default="0.0" />
@@ -50,8 +50,8 @@
     <arg name="verbose" value="$(arg verbose)"/>
   </include>
 
-  <!-- Spawn the crazyflie model -->
-  <group ns="$(arg cfPrefix)">
+    <!-- Spawn the crazyflie model -->
+  <group ns="$(arg cfPrefix)1">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
       <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
@@ -63,13 +63,34 @@
       <arg name="y" default="$(arg y_1)"/>
       <arg name="z" default="$(arg z_1)"/>
     </include>
+  </group>
 
-    <!-- Launch joy node with the autorepeat_rate parameter -->
+  <!-- Spawn the crazyflie handler model -->
+  <group ns="$(arg handerName)">
+    <include file="$(find crazyflie_gazebo)/launch/spawn_plugin.launch">
+      <arg name="plugin_name" value="$(arg handerName)" />
+      <arg name="nbQuads" value="$(arg nbQuads)" />
+      <arg name="cfPrefix" value="$(arg cfPrefix)" />
+      <arg name="udpPort" value="$(arg udpPort)" />
+      <arg name="firstIndex" value="$(arg firstIndex)" />
+
+      <arg name="enable_logging" value="$(arg enable_logging)"/>
+      <arg name="enable_parameters" value="$(arg enable_parameters)"/>
+      <arg name="use_ros_time" value="$(arg use_ros_time)"/>
+      <arg name="enable_logging_imu" value="$(arg enable_logging_imu)"/>
+      <arg name="enable_logging_temperature" value="$(arg enable_logging_temperature)"/>
+      <arg name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field)"/>
+      <arg name="enable_logging_pressure" value="$(arg enable_logging_pressure)"/>
+      <arg name="enable_logging_battery" value="$(arg enable_logging_battery)"/>
+      <arg name="enable_logging_packets" value="$(arg enable_logging_packets)"/>
+    </include>
+  </group>
+
+  <group ns= "$(arg cfPrefix)1">
     <node pkg="joy" name="joy" type="joy_node" output="screen" >
       <param name="autorepeat_rate" value="50"/>
     </node>
 
-    <!-- Teleop node for cf control -->
     <node pkg="crazyflie_gazebo" name="cf_joy" type="joy_control_node" output="screen">
       <param name="only_command" value = "$(arg only_command)" />
       <param name="LB" value="4" />
@@ -94,29 +115,7 @@
       <param name="land_duration" value="4.0" />
       <param name="takeoff_height" value="0.5"/>
       <param name="groupMask" value="0"/>
-      <!-- <param name="yaw_rate_max" value="3.14" /> -->
     </node>
-  </group>
-
-  <!-- Spawn the crazyflie handler model -->
-  <group ns="$(arg handerName)">
-    <include file="$(find crazyflie_gazebo)/launch/spawn_plugin.launch">
-      <arg name="plugin_name" value="$(arg handerName)" />
-      <arg name="nbQuads" value="$(arg nbQuads)" />
-      <arg name="cfPrefix" value="$(arg cfPrefix)" />
-      <arg name="udpPort" value="$(arg udpPort)" />
-      <arg name="firstIndex" value="$(arg firstIndex)" />
-
-      <arg name="enable_logging" value="$(arg enable_logging)"/>
-      <arg name="enable_parameters" value="$(arg enable_parameters)"/>
-      <arg name="use_ros_time" value="$(arg use_ros_time)"/>
-      <arg name="enable_logging_imu" value="$(arg enable_logging_imu)"/>
-      <arg name="enable_logging_temperature" value="$(arg enable_logging_temperature)"/>
-      <arg name="enable_logging_magnetic_field" value="$(arg enable_logging_magnetic_field)"/>
-      <arg name="enable_logging_pressure" value="$(arg enable_logging_pressure)"/>
-      <arg name="enable_logging_battery" value="$(arg enable_logging_battery)"/>
-      <arg name="enable_logging_packets" value="$(arg enable_logging_packets)"/>
-    </include>
   </group>
 
 </launch>

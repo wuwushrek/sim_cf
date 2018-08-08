@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <Eigen/Dense>
+#include <ros/callback_queue.h>
 
 #include <sensor_msgs/Joy.h>
 
@@ -27,14 +28,14 @@
 #define POS_VEL_CONTROL                 3
 #define ACC_ATT_CONTROL                 5     
 
-#define MAIN_LOOP_RATE             		40            		//main loop rate for getting more faster all the subscriber datas
+#define MAIN_LOOP_RATE             		20            		//main loop rate for getting more faster all the subscriber datas
 
 #define PI_                   			180.0		//3.1415926535897
-#define PITCH_MAX               		(PI_/10.0)    		//Max pitch angle allowed
-#define ROLL_MAX                		(PI_/10.0)    		//Max roll angle allowed
-#define YAW_MAX_RATE                    (PI_/100.0)           //in deg per seg
+#define PITCH_MAX               		(PI_/20.0)    		//Max pitch angle allowed
+#define ROLL_MAX                		(PI_/20.0)    		//Max roll angle allowed
+#define YAW_MAX_RATE                    (PI_/200.0)           //in deg per seg
 
-#define THROTTLE_MAX             		60000           	//Max throttle allowed
+#define THROTTLE_MAX             		55000           	//Max throttle allowed
 
 #define STEP_Z_RATE                     0.05
 #define STEP_Y_X_RATE                   0.05
@@ -135,6 +136,13 @@ unsigned char current_state = -1;
 bool last_is_arm = false;
 bool is_arm = false;
 
+//save last state of takeoff and land
+bool last_is_takeoff = false;
+bool is_taking_off = true;
+
+bool last_is_landing = false;
+bool is_landing = true; 
+
 // bool current quad state
 bool is_posctl = false;
 bool is_attctl = false;
@@ -149,19 +157,28 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
 
     bool reset_control_type = false;
 
-    //Arm or disarm motors
+    // Arm or disarm motors
     if (msg->buttons[start] == 1 && !last_is_arm){
-        //commands.request.arm_motors = !quad_state.is_armed ? 1: 2;  //Toggle arming status
         is_arm = !is_arm;
         if (!is_arm){
             crazyflie_gazebo::Stop stop_srv;
             stop_srv.request.groupMask = groupMask;
             stop_client.call(stop_srv);
+            is_posctl = false;
+            is_velctl = false;
+            is_attctl = false;
+            is_taking_off = false;
+            is_landing = false;
         }
     }
 
     //Take off started
-    if (msg->buttons[B] == 1){
+    if (msg->buttons[B] == 1 && !last_is_takeoff ){
+        is_posctl = false;
+        is_velctl = false;
+        is_attctl = false;
+        is_taking_off = true;
+        is_landing = false;
         crazyflie_gazebo::Takeoff takeoff_srv;
         takeoff_srv.request.height = takeoff_height;
         takeoff_srv.request.duration = ros::Duration(takeoff_duration);
@@ -170,7 +187,12 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
     }
 
     //landing started
-    if (msg->buttons[Y] == 1){
+    if (msg->buttons[Y] == 1 && !last_is_landing){
+        is_posctl = false;
+        is_velctl = false;
+        is_attctl = false;
+        is_taking_off = false;
+        is_landing = true;
         crazyflie_gazebo::Land land_srv;
         land_srv.request.height = 0;
         land_srv.request.duration = ros::Duration(land_duration);
@@ -180,8 +202,6 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
 
     //Enable attitude control
     if (msg->buttons[A] == 1){
-        is_posctl = false;
-        is_velctl = false;
         current_state = ACC_ATT_CONTROL;
         ROS_WARN("ATTITUDE CONTROL SELECTED ! ");
     }
@@ -195,18 +215,22 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
 
     //Enable position control
     if(current_state == POS_VEL_CONTROL && msg->buttons[RB] ==1){
+        is_attctl = false;
         is_posctl = true;
         is_velctl = false;
-        is_attctl = false;
+        is_taking_off = false;
+        is_landing = false;
         reset_control_type = true;
         ROS_WARN("POSITION CONTROL ACTIVATED ! ");
     }
 
     //Enable Velocity control
     if(current_state == POS_VEL_CONTROL && msg->buttons[LB] ==1){
-        is_velctl = true;
-        is_posctl = false;
         is_attctl = false;
+        is_posctl = false;
+        is_velctl = true;
+        is_taking_off = false;
+        is_landing = false;
         reset_control_type = true;
         ROS_WARN("VELOCITY CONTROL ACTIVATED !");
     }
@@ -216,6 +240,8 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_attctl = true;
         is_posctl = false;
         is_velctl = false;
+        is_taking_off = false;
+        is_landing = false;
         reset_control_type = true;
         ROS_WARN("ATTITUDE CONTROL ACTIVATED !");
     }
@@ -248,6 +274,8 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
 
     //Resetting is_arm variable for being able to toggle between armed and disarmed 
     last_is_arm = (msg->buttons[start] == 1);
+    last_is_takeoff = (msg->buttons[B] == 1);
+    last_is_landing = (msg->buttons[Y] == 1);
 
 }
 
@@ -383,7 +411,9 @@ int main(int argc, char **argv)
     }
 
     //Appropriate node_handle
-    ros::NodeHandle nh = ros::NodeHandle();
+    ros::CallbackQueue m_callback_queue;
+    ros::NodeHandle nh;
+    nh.setCallbackQueue(&m_callback_queue);
 
     //Publishers
     pos_control_pub = nh.advertise<crazyflie_gazebo::Position>(POS_CONTROL_TOPIC , 10);
@@ -401,13 +431,16 @@ int main(int argc, char **argv)
     update_params_client =  nh.serviceClient<crazyflie_gazebo::UpdateParams>(UPDATE_PARAMS_TOPIC);
     
     //Main loop rate
-    ros::Rate main_rate(MAIN_LOOP_RATE);
+    // ros::Rate main_rate(MAIN_LOOP_RATE);
 
     // Need to arm a first time before anything else
     while (!last_is_arm){
-        ros::spinOnce();
-        main_rate.sleep();
+        // ros::spinOnce();
+        m_callback_queue.callAvailable(ros::WallDuration(0.02));
+        //main_rate.sleep();
+        // std::this_thread::sleep_for(std::chrono::milliseconds(0.02));
     }
+    is_arm = true;
 
     crazyflie_gazebo::UpdateParams m_params;
     m_params.request.params.push_back("commander/enHighLevel");
@@ -430,12 +463,12 @@ int main(int argc, char **argv)
         dt = current_time - last_time;
         last_time = current_time;
 
-        if (!is_posctl && !is_attctl && !is_velctl){
+        if (!is_posctl && !is_attctl && !is_velctl && !is_taking_off && !is_landing){
             geometry_msgs::Twist arm_twist_msg;
             if (is_arm)
                 arm_twist_msg.linear.z = 10000;
             else
-               arm_twist_msg.linear.z = 0; 
+                arm_twist_msg.linear.z = 0;
             att_control_pub.publish(arm_twist_msg);
         }
 
@@ -467,8 +500,9 @@ int main(int argc, char **argv)
             att_control_pub.publish(att_control_msg);
         }
 
-    	ros::spinOnce();
-    	main_rate.sleep();
+    	// ros::spinOnce();
+    	// main_rate.sleep();
+        m_callback_queue.callAvailable(ros::WallDuration(0.02));
     }
 
     ros::param::set("commander/enHighLevel" , 0);

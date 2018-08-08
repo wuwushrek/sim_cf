@@ -254,8 +254,8 @@ void GazeboCfHandler::cfROSThread()
 			if (isInit[i])
 				cfROS_[i]->updateInformation();
 		}
-		m_callback_queue.callAvailable(ros::WallDuration(0.0));
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		m_callback_queue.callAvailable(ros::WallDuration(0.002));
+		// std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}
 
 }
@@ -274,6 +274,7 @@ void GazeboCfHandler::sendThread()
 			send(msg.data , sizeof(struct baro_s) , msg.index);
 		else if (msg.data[1] == SENSOR_POS_SIM){
 			m_pos = (struct pos_s *) msg.data;
+			// gzmsg << m_pos->pos.x << " , " << m_pos->pos.y << " , " << m_pos->pos.z << std::endl;
 			cfROS_[msg.index]->sendExternalPositionUpdate(m_pos->pos.x , m_pos->pos.y , m_pos->pos.z);
 		}
 	}
