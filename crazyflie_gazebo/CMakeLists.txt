@@ -304,6 +304,19 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler
   )
 add_custom_target(cfHandler_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf)
 
+set(poseTopic "/cf1/pose")
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
+  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf  ${rotors_description_dir}/urdf/crazyflie_ghost_base.xacro poseTopic:=${poseTopic} namespace:=${namespace} rotors_description_dir:=${rotors_description_dir} color_prop_front:=${color_prop_front} color_prop_back:=${color_prop_back}
+  COMMAND gz sdf -p  ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
+  COMMAND rm -f ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf
+  DEPENDS ${rotors_description_dir}/urdf/crazyflie_ghost_base.xacro
+  DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
+  )
+add_custom_target(crazyflie_ghost_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf)
+
 
 #-----------#
 # Functions #
@@ -485,6 +498,13 @@ target_link_libraries(test_cf ${catkin_LIBRARIES} ${CRAZYFLIE_COMM_LIBRARY})
 #==============================================================================================//
 
 #======================================= cfHandler PLUGIN ==========================================//
+add_library(gazebo_cfGhost_plugin SHARED src/gazebo_cfGhost_plugin.cpp)
+target_link_libraries(gazebo_cfGhost_plugin ${catkin_LIBRARIES})
+add_dependencies(gazebo_cfGhost_plugin ${catkin_EXPORTED_TARGETS})
+list(APPEND targets_to_install gazebo_cfGhost_plugin)
+#==============================================================================================//
+
+#======================================= cfGHost PLUGIN ==========================================//
 add_library(gazebo_cfHandler_plugin SHARED src/gazebo_cfHandler_plugin.cpp)
 target_link_libraries(gazebo_cfHandler_plugin ${catkin_LIBRARIES} crazyflie_ros)
 add_dependencies(gazebo_cfHandler_plugin ${catkin_EXPORTED_TARGETS})

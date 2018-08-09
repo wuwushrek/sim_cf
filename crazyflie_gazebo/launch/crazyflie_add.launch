@@ -4,13 +4,13 @@
   <!-- <arg name="uri" default="usb://0" /> -->
   <arg name="uri" default="radio://0/80/2M" />
   <!-- <arg name="uri" default="INADDR_ANY://19950" /> -->
-  <arg name="tf_prefix" default="/" />
+  <arg name="tf_prefix" default="/cf1" />
   <arg name="roll_trim" default="0" />
   <arg name="pitch_trim" default="0" />
   <arg name="enable_logging" default="True" />
   <arg name="enable_parameters" default="True" />
   <arg name="use_ros_time" default="True" />
-  <arg name="enable_logging_imu" default="True" />
+  <arg name="enable_logging_imu" default="False" />
   <arg name="enable_logging_temperature" default="False" />
   <arg name="enable_logging_magnetic_field" default="False" />
   <arg name="enable_logging_pressure" default="False" />

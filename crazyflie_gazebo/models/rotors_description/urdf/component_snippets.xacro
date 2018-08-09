@@ -299,4 +299,13 @@
     </gazebo>
   </xacro:macro>
 
+  <xacro:macro name="ghost_plugin_macro" 
+    params="poseTopic">
+    <gazebo>
+      <plugin name="cfGhost_plugin" filename="libgazebo_cfGhost_plugin.so">
+        <poseTopic>${poseTopic}</poseTopic>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
 </robot>

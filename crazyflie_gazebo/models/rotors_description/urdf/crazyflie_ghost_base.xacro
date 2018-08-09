@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+    Copyright 2018 Eric Goubault, Cosynus, LIX, France
+    Copyright 2018 Sylve Putot, Cosynus, LIX, France
+    Copyright 2018 Franck Djeumou, Cosynus, LIX, France
+-->
+
+<robot name="crazyflie_ghost" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:arg name='namespace' default='' />
+
+  <xacro:include filename="$(arg rotors_description_dir)/urdf/component_snippets.xacro"/>
+
+  <!-- Instantiate crazyflie "mechanics" -->
+  <xacro:include filename="$(arg rotors_description_dir)/urdf/crazyflie.xacro" />
+
+  <xacro:ghost_plugin_macro
+    poseTopic="$(arg poseTopic)">
+  </xacro:ghost_plugin_macro>
+
+</robot>
