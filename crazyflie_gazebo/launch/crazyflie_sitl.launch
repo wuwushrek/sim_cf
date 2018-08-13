@@ -2,7 +2,7 @@
 
 <launch>
   <arg name="mav_name" default="crazyflie"/>
-  <arg name="world_name" default="basic"/>
+  <arg name="world_name" default="salle_lix"/>
   <arg name="debug" default="false"/>
   <arg name="gui" default="true"/>
   <arg name="paused" default="true"/>
