@@ -24,8 +24,8 @@ if __name__ == '__main__':
 
     cf.setParam("commander/enHighLevel", 1)
 
-    # cf.takeoff(targetHeight = 1.5, duration = 4.0)
-    # time.sleep(10.0)
+    cf.takeoff(targetHeight = 1.5, duration = 2.0)
+    time.sleep(10.0)
 
     # (t , x , y) = circle_trajectory(50 , 10 , 0.8)
 
@@ -42,22 +42,22 @@ if __name__ == '__main__':
     # # cf.goTo(goal = [0.5, 0.0, 0.0], yaw=0.2, duration = 2.0, relative = True)
     # # time.sleep(15.0)
 
-    # cf.land(targetHeight = 0.0, duration = 2.0)
-    # time.sleep(15.0)
+    cf.land(targetHeight = 0.0, duration = 2.0)
+    time.sleep(15.0)
     
     # traj1 = uav_trajectory.Trajectory()
     # traj1.loadcsv("takeoff.csv")
 
-    traj2 = uav_trajectory.Trajectory()
-    traj2.loadcsv("losange.csv")
+    # traj2 = uav_trajectory.Trajectory()
+    # traj2.loadcsv("losange.csv")
 
-    print(traj2.duration)
+    # print(traj2.duration)
 
-    cf.uploadTrajectory(0, 0, traj2)
-    # cf.uploadTrajectory(1, len(traj1.polynomials), traj2)
+    # cf.uploadTrajectory(0, 0, traj2)
+    # # cf.uploadTrajectory(1, len(traj1.polynomials), traj2)
 
-    cf.startTrajectory(0, timescale=1.0)
-    time.sleep(traj2.duration * 2.0)
+    # cf.startTrajectory(0, timescale=1.0)
+    # time.sleep(traj2.duration * 2.0)
 
     # cf.startTrajectory(1, timescale=2.0)
     # time.sleep(traj2.duration * 2.0)
