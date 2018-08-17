@@ -89,3 +89,27 @@ Then launch cf2 with the following command :
 
 Follow documentation on https://github.com/wuwushrek/sim_cf/tree/master/crazyflie_gazebo in order to communicate with the SITL/HITL instance and start playing with the simulation environment.
 ![alt text](https://github.com/wuwushrek/sim_cf/blob/multi-uav-final/7cfs.gif)
+
+# [Salle LIX] Flying with a single real crazyflie (Using LPS)
+
+Before everything else, Turn on the crazyflie and put it in the arena.
+
+Now open a console and launch the crazyflie server using the following command : 
+```sh
+roslaunch crazyflie_gazebo crazyflie_server
+```
+This command allows you to open a 'server' that will be waiting for removal or addition of different crazyflies.
+
+Open  a new console and launch the following command in order to add a crazyflie (therefore to be able to communicate with the crazyflie using ROS topics) : 
+```sh
+roslaunch crazyflie_gazebo crazyflie_add
+```
+Now if you want to get more information from the crazyflie, setting to True [one of these parameters](https://github.com/wuwushrek/sim_cf/blob/5b069ef0c6aa41eb450cd85d9821d2695f126701/crazyflie_gazebo/launch/crazyflie_add.launch#L8-L19) will do the trick. Also note that [the prefix](https://github.com/wuwushrek/sim_cf/blob/5b069ef0c6aa41eb450cd85d9821d2695f126701/crazyflie_gazebo/launch/crazyflie_add.launch#L7) argument here is the prefix that will be applied to all of your ROS topic. That means that for example to listen to the pose of the crazyflie, you should do :
+```sh
+# tf_prefix in the current crazyflie_add.launch is equal to /cf1
+rostopic echo /tf_prefix/pose
+```
+
+After the crazyflie has been successfully added, you can now launch whatever high level function you want. For example, check the script [test_high_level.py](https://github.com/wuwushrek/sim_cf/blob/multi-uav-final/crazyflie_gazebo/scripts/test_high_level.py). Just be sure that [here](https://github.com/wuwushrek/sim_cf/blob/5b069ef0c6aa41eb450cd85d9821d2695f126701/crazyflie_gazebo/scripts/test_high_level.py#L23) you set correctly the tf_prefix that match the value used in crazyflie_add.launch
+
+# How does the test_high_levl.py works
