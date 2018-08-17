@@ -138,3 +138,9 @@ When the crazyflie has been put in the arena, it is possible to visualize its 3D
 roslaunch crazyflie_gazebo crazyflie_real_gazebo.launch
 ```
 Then click on the play button on the gazebo windows in order to have the virtual crazyflie following the real one. At the beginning you should see 2 crazyflie : The first one is kind of transparent and will represents the desired state for the real crazyflie and the second one will represent the current estimate state for the real crazyflie.
+
+To visualize the crazyflie current pose and target pose in an RVIZ environment, just open a new console and then enter the following commands : 
+```sh
+cd ~/catkin_ws/src/sim_cf/crazyflie_gazebo/launch
+rosrun rviz rviz -d crazyflie_visu.rviz
+```

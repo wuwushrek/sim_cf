@@ -52,7 +52,7 @@ python test_high_level.py
 ```
 To visualize the crazyflie current pose and target pose in an RVIZ environment, just open a new console and then enter the following commands : 
 ```sh
-cd ~/catkin_ws/src/sim_cf/crazyflie_gazebo$/launch
+cd ~/catkin_ws/src/sim_cf/crazyflie_gazebo/launch
 rosrun rviz rviz -d crazyflie_visu.rviz
 ```
 
