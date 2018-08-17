@@ -115,7 +115,7 @@ Now if you want to get more information from the crazyflie, setting to True [one
 rostopic echo /tf_prefix/pose
 ```
 
-After the crazyflie has been successfully added, you can now launch whatever high level function you want. For example, check the script [test_high_level.py](https://github.com/wuwushrek/sim_cf/blob/multi-uav-final/crazyflie_gazebo/scripts/test_high_level.py). Just be sure that [here](https://github.com/wuwushrek/sim_cf/blob/5b069ef0c6aa41eb450cd85d9821d2695f126701/crazyflie_gazebo/scripts/test_high_level.py#L23) you set correctly the tf_prefix that match the value used in crazyflie_add.launch
+After the crazyflie has been successfully added, you can now launch whatever high level function you want. For example, check the script [test_high_level.py](https://github.com/wuwushrek/sim_cf/blob/multi-uav-final/crazyflie_gazebo/scripts/test_high_level.py). Just be sure that [here](https://github.com/wuwushrek/sim_cf/blob/5b069ef0c6aa41eb450cd85d9821d2695f126701/crazyflie_gazebo/scripts/test_high_level.py#L23) you have set correctly the tf_prefix that match the value used in crazyflie_add.launch
 
 # How does the test_high_level.py works
 
@@ -124,11 +124,11 @@ cd ~/catkin_ws/src/sim_cf/scripts/
 python test_high_level.py
 ```
 
-This scripts file is a simple python file that execute a set of example of high level functionnality. These high level functionnality are made possible via ROS client/server and ROS topics.
-First initialize a crazyflie instance (a simple class giving high level functionnality to quickly connect to these topics) like it is done on [this line](https://github.com/wuwushrek/sim_cf/blob/a033a78135ccd46f40b161d1d30a4faa2d7ee5a7/crazyflie_gazebo/scripts/test_high_level.py#L23). Then enable the high level functionnality using [commander/enHIghLevl params](https://github.com/wuwushrek/sim_cf/blob/a033a78135ccd46f40b161d1d30a4faa2d7ee5a7/crazyflie_gazebo/scripts/test_high_level.py#L25). Finally have a look at the prototype of functions [here](https://github.com/wuwushrek/sim_cf/blob/multi-uav-final/crazyflie_gazebo/scripts/crazyflie.py) in order to know the different hhigh level function availabled. An instance of high leve functionality is the taking off functionality. Taking off only required only required [these lines](https://github.com/wuwushrek/sim_cf/blob/4b3e47e279c55665cca214cda938f3a818c394cd/crazyflie_gazebo/scripts/test_high_level.py#L27-L28) after all the previous steps have been done. I guess you know what to do for other high level functionality ;) Check again the python file for more details/
+This script file is a simple python file that execute a set of example of high level functionnality. These high level functionnality are made possible via ROS client/server and ROS topics.
+First initialize a crazyflie instance (a simple class giving high level ROS functionnality to quickly connect to these topics) like it is done on [this line](https://github.com/wuwushrek/sim_cf/blob/a033a78135ccd46f40b161d1d30a4faa2d7ee5a7/crazyflie_gazebo/scripts/test_high_level.py#L23). Then enable the high level functionnality using [commander/enHighLvl params](https://github.com/wuwushrek/sim_cf/blob/a033a78135ccd46f40b161d1d30a4faa2d7ee5a7/crazyflie_gazebo/scripts/test_high_level.py#L25). Finally have a look at the prototype of functions [here](https://github.com/wuwushrek/sim_cf/blob/multi-uav-final/crazyflie_gazebo/scripts/crazyflie.py) in order to know the different high level function availabled. An instance of high level functionality is the taking off functionality. Taking off only required [these lines](https://github.com/wuwushrek/sim_cf/blob/4b3e47e279c55665cca214cda938f3a818c394cd/crazyflie_gazebo/scripts/test_high_level.py#L27-L28) if and only if all the previous steps have been done. I guess you know what to do for other high level functionality ;) Check again the python file for more details/
 
 # How to monitor real crazyflie using gazebo environment
-When the crazyflie have been put in the are, it is possible to visualize its 3D position using GAZEBO or RVIZ. Using gazebo the only step to do is launching the following commands :
+When the crazyflie has been put in the arena, it is possible to visualize its 3D position using GAZEBO or RVIZ. Using gazebo the only step to do is launching the following commands :
 ```sh
 roslaunch crazyflie_gazebo crazyflie_real_gazebo.launch
 ```
