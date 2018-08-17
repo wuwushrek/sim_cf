@@ -50,6 +50,12 @@ This script is a basic script launching all the crazyflie sitl instances. YOU WI
 cd ~/catkin_ws/src/sim_cf/crazyflie_gazebo/scripts/
 python test_high_level.py
 ```
+To visualize the crazyflie current pose and target pose in an RVIZ environment, just open a new console and then enter the following commands : 
+```sh
+cd ~/catkin_ws/src/sim_cf/crazyflie_gazebo$/launch
+rosrun rviz rviz -d crazyflie_visu.rviz
+```
+
 ### In case of multiple crazyflies
 If you have followed the multiple crazyflie example above, That means you have spawned 7 crazyflies with the prefix cf, just launch the following commands :
 ```sh

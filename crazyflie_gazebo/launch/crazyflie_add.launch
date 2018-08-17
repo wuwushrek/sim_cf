@@ -17,8 +17,9 @@
   <arg name="enable_logging_battery" default="False" />
   <arg name="enable_logging_packets" default="False" />
   <arg name="enable_logging_pose" default="True" />
+  <arg name="enable_logging_setpoint_pose" default="True" />
 
-  <node pkg="crazyflie_gazebo" type="crazyflie_add" name="crazyflie_add" output="screen">
+  <node pkg="crazyflie_gazebo" oggintype="crazyflie_add" name="crazyflie_add" output="screen">
     <param name="uri" value="$(arg uri)" />
     <param name="tf_prefix" value="$(arg tf_prefix)" />
     <param name="roll_trim" value="$(arg roll_trim)" />

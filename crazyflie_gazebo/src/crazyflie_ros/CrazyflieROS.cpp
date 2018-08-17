@@ -26,7 +26,8 @@ CrazyflieROS::CrazyflieROS(
   bool enable_logging_pressure,
   bool enable_logging_battery,
   bool enable_logging_packets,
-  bool enable_logging_pose)
+  bool enable_logging_pose,
+  bool enable_logging_setpoint_pose)
 : m_cf(cf_uri,rosLogger)
 , m_tf_prefix(tf_prefix)
 , m_isEmergency(false)
@@ -43,6 +44,7 @@ CrazyflieROS::CrazyflieROS(
 , m_enable_logging_battery(enable_logging_battery)
 , m_enable_logging_packets(enable_logging_packets)
 , m_enable_logging_pose(enable_logging_pose)
+, m_enable_logging_setpoint_pose(enable_logging_setpoint_pose)
 , m_serviceEmergency()
 , m_serviceUpdateParams()
 , m_serviceSetGroupMask()
@@ -102,6 +104,7 @@ CrazyflieROS::CrazyflieROS(
 , m_enable_logging_battery(enable_logging_battery)
 , m_enable_logging_packets(enable_logging_packets)
 , m_enable_logging_pose(true)
+, m_enable_logging_setpoint_pose(true)
 , m_serviceEmergency()
 , m_serviceUpdateParams()
 , m_serviceSetGroupMask()
@@ -210,7 +213,11 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
   m_subscribeCmdStop = n.subscribe(m_tf_prefix + "/cmd_stop", 1, &CrazyflieROS::cmdStop, this);
   m_subscribeCmdPosition = n.subscribe(m_tf_prefix + "/cmd_position", 1, &CrazyflieROS::cmdPositionSetpoint, this);
 
-  m_pubState = n.advertise<geometry_msgs::PoseStamped>(m_tf_prefix + "/pose",10);
+  if (m_enable_logging_pose)
+    m_pubState = n.advertise<geometry_msgs::PoseStamped>(m_tf_prefix + "/pose",10);
+
+  if (m_enable_logging_setpoint_pose)
+    m_pubSetpointState = n.advertise<geometry_msgs::PoseStamped>(m_tf_prefix + "/setpoint_pose",10);
 
   m_serviceSetGroupMask = n.advertiseService(m_tf_prefix + "/set_group_mask", &CrazyflieROS::setGroupMask, this);
   m_serviceTakeoff = n.advertiseService(m_tf_prefix + "/takeoff", &CrazyflieROS::takeoff, this);
@@ -402,6 +409,20 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
             {"stabilizer", "yaw"},
           }, cbQuadState));
         logStateData->start(1);
+      }
+
+      if (m_enable_logging_setpoint_pose){
+        std::function<void(uint32_t, logState*)> cbQuadSetpointState = std::bind(&CrazyflieROS::onLogSetpointStateData, this, std::placeholders::_1, std::placeholders::_2);
+        logSetpointStateData.reset(new LogBlock<logState>(
+          &m_cf,{
+            {"posCtl", "targetX"},
+            {"posCtl", "targetY"},
+            {"posCtl", "targetZ"},
+            {"ctrltarget", "roll"},
+            {"ctrltarget", "pitch"},
+            {"ctrltarget", "yaw"},
+          }, cbQuadSetpointState));
+        logSetpointStateData->start(1);
       }
 
       // custom log blocks
@@ -724,6 +745,21 @@ void CrazyflieROS::onLogStateData(uint32_t time_in_ms, logState* data) {
     m_pubState.publish(msg);
 }
 
+void CrazyflieROS::onLogSetpointStateData(uint32_t time_in_ms, logState* data) {
+    geometry_msgs::PoseStamped msg;
+    if (m_use_ros_time) {
+      msg.header.stamp = ros::Time::now();
+    } else {
+      msg.header.stamp = ros::Time(time_in_ms / 1000.0);
+    }
+    msg.header.frame_id = m_tf_prefix + "/base_link";
+    msg.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(degToRad(data->roll), degToRad(data->pitch), degToRad(data->yaw));
+    msg.pose.position.x = data->x;
+    msg.pose.position.y = data->y;
+    msg.pose.position.z = data->z;
+    m_pubSetpointState.publish(msg);
+}
+
 void CrazyflieROS::onLogLinkStatsData(uint32_t time_in_ms, logLinkStats* data){
   ROS_WARN("[%s] rxRate = %d | rxDrpRte = %d | txRate = %d", m_tf_prefix.c_str() ,(int) data->rxRate, (int) data->rxDrpRte, (int) data->txRate);
 }
@@ -949,7 +985,8 @@ bool CrazyflieServer::add_crazyflie(
     req.enable_logging_pressure,
     req.enable_logging_battery,
     req.enable_logging_packets,
-    req.enable_logging_pose);
+    req.enable_logging_pose,
+    req.enable_logging_setpoint_pose);
 
   m_crazyflies[req.uri] = cf;
 

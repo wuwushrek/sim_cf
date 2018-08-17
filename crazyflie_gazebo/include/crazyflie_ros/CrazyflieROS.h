@@ -93,7 +93,8 @@ public:
 		bool enable_logging_pressure,
 		bool enable_logging_battery,
 		bool enable_logging_packets,
-		bool enable_logging_pose);
+		bool enable_logging_pose,
+		bool enable_logging_setpoint_pose);
 
 /*************** Additions/Modifications for Simulation ****************/
 	CrazyflieROS(
@@ -238,6 +239,8 @@ private:
 	void onImuSimDataResponse(const crtpImuSimDataResponse* data);
 
 	void onLogStateData(uint32_t time_in_ms, logState* data);
+
+	void onLogSetpointStateData(uint32_t time_in_ms, logState* data);
 /**********************************************************************/
 
 	void onEmptyAck(const crtpPlatformRSSIAck* data);
@@ -291,6 +294,7 @@ private:
 	bool m_enable_logging_battery;
 	bool m_enable_logging_packets;
 	bool m_enable_logging_pose;
+	bool m_enable_logging_setpoint_pose;
 
 	ros::ServiceServer m_serviceEmergency;
 	ros::ServiceServer m_serviceUpdateParams;
@@ -318,6 +322,7 @@ private:
 	ros::Publisher m_pubPackets;
 	ros::Publisher m_pubRssi;
 	ros::Publisher m_pubState;
+	ros::Publisher m_pubSetpointState;
 
 	std::vector<ros::Publisher> m_pubLogDataGeneric;
 
@@ -328,6 +333,7 @@ private:
 	std::unique_ptr<LogBlock<log2> > logBlock2;
 	std::unique_ptr<LogBlock<logLinkStats> > logStatsData;
 	std::unique_ptr<LogBlock<logState> > logStateData;
+	std::unique_ptr<LogBlock<logState> > logSetpointStateData;
 
 	bool first_pos_sent;
 	bool m_gyrobias_found;

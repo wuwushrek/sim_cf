@@ -316,7 +316,7 @@
     </plugin>
     <static>1</static>
     <plugin name='cfGhost_plugin' filename='libgazebo_cfGhost_plugin.so'>
-      <poseTopic>/cf1/pose</poseTopic>
+      <poseTopic>/cf1/setpoint_pose</poseTopic>
     </plugin>
   </model>
 </sdf>
