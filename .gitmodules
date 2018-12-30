@@ -4,6 +4,3 @@
 [submodule "crazyflie-firmware"]
 	path = crazyflie-firmware
 	url = https://github.com/wuwushrek/crazyflie-firmware.git
-[submodule "crazyflie_gazebo/external/crazyflie_comm"]
-	path = crazyflie_gazebo/external/crazyflie_comm
-	url = https://github.com/wuwushrek/crazyflie_cpp.git
