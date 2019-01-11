@@ -4,25 +4,25 @@
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 
-#include "crazyflie_gazebo/AddCrazyflie.h"
-#include "crazyflie_gazebo/GoTo.h"
-#include "crazyflie_gazebo/Land.h"
-#include "crazyflie_gazebo/RemoveCrazyflie.h"
-#include "crazyflie_gazebo/SetGroupMask.h"
-#include "crazyflie_gazebo/StartTrajectory.h"
-#include "crazyflie_gazebo/Stop.h"
-#include "crazyflie_gazebo/Takeoff.h"
-#include "crazyflie_gazebo/UpdateParams.h"
-#include "crazyflie_gazebo/UploadTrajectory.h"
-#include "crazyflie_gazebo/sendPacket.h"
+#include "crazyflie_driver/AddCrazyflie.h"
+#include "crazyflie_driver/GoTo.h"
+#include "crazyflie_driver/Land.h"
+#include "crazyflie_driver/RemoveCrazyflie.h"
+#include "crazyflie_driver/SetGroupMask.h"
+#include "crazyflie_driver/StartTrajectory.h"
+#include "crazyflie_driver/Stop.h"
+#include "crazyflie_driver/Takeoff.h"
+#include "crazyflie_driver/UpdateParams.h"
+#include "crazyflie_driver/UploadTrajectory.h"
+#include "crazyflie_driver/sendPacket.h"
 
-#include "crazyflie_gazebo/LogBlock.h"
-#include "crazyflie_gazebo/GenericLogData.h"
-#include "crazyflie_gazebo/FullState.h"
-#include "crazyflie_gazebo/Hover.h"
-#include "crazyflie_gazebo/Stop.h"
-#include "crazyflie_gazebo/Position.h"
-#include "crazyflie_gazebo/crtpPacket.h"
+#include "crazyflie_driver/LogBlock.h"
+#include "crazyflie_driver/GenericLogData.h"
+#include "crazyflie_driver/FullState.h"
+#include "crazyflie_driver/Hover.h"
+#include "crazyflie_driver/Stop.h"
+#include "crazyflie_driver/Position.h"
+#include "crazyflie_driver/crtpPacket.h"
 
 #include "crazyflie_cpp/Crazyradio.h"
 #include "crazyflie_cpp/crtp.h"
@@ -78,29 +78,14 @@ class CrazyflieROS
 {
 
 public:
-	CrazyflieROS(
-		const std::string& cf_uri,
-		const std::string& tf_prefix,
-		float roll_trim,
-		float pitch_trim,
-		bool enable_logging,
-		bool enable_parameters,
-		std::vector<crazyflie_gazebo::LogBlock>& log_blocks,
-		bool use_ros_time,
-		bool enable_logging_imu,
-		bool enable_logging_temperature,
-		bool enable_logging_magnetic_field,
-		bool enable_logging_pressure,
-		bool enable_logging_battery,
-		bool enable_logging_packets,
-		bool enable_logging_pose,
-		bool enable_logging_setpoint_pose);
 
 /*************** Additions/Modifications for Simulation ****************/
 	CrazyflieROS(
+		const std::string& cf_uri,
 		const std::string& tf_prefix,
 		bool enable_logging,
 		bool enable_parameters,
+		std::vector<crazyflie_driver::LogBlock>& log_blocks,
 		bool use_ros_time,
 		bool enable_logging_imu,
 		bool enable_logging_temperature,
@@ -109,7 +94,25 @@ public:
 		bool enable_logging_battery,
 		bool enable_logging_packets,
 		std::function<void(const uint8_t* , uint32_t)> sendDataFunc,
-		std::function<void(Crazyradio::Ack &, int64_t)> recvDataFunc);
+		std::function<void(ITransport::Ack &, int64_t)> recvDataFunc);
+
+	CrazyflieROS(
+		const std::string& cf_uri,
+		const std::string& tf_prefix,
+		float roll_trim,
+		float pitch_trim,
+		bool enable_logging,
+		bool enable_parameters,
+		std::vector<crazyflie_driver::LogBlock>& log_blocks,
+		bool use_ros_time,
+		bool enable_logging_imu,
+		bool enable_logging_temperature,
+		bool enable_logging_magnetic_field,
+		bool enable_logging_pressure,
+		bool enable_logging_battery,
+		bool enable_logging_packets,
+		bool enable_logging_pose = true,
+		bool enable_logging_setpoint_pose = true);
 
 	void setOnMotorsData(std::function<void(const crtpMotorsDataResponse*)> cb);
 
@@ -143,16 +146,16 @@ public:
 	* @return     returns true always
 	*/
 	bool sendPacket (
-		crazyflie_gazebo::sendPacket::Request &req,
-		crazyflie_gazebo::sendPacket::Response &res);
+		crazyflie_driver::sendPacket::Request &req,
+		crazyflie_driver::sendPacket::Response &res);
 
-private:
-	ros::ServiceServer m_sendPacketServer;
+// private:
+//	ros::ServiceServer m_sendPacketServer;
 	/**
 	* Publishes any generic packets en-queued by the crazyflie to a crtpPacket
 	* topic.
 	*/
-	void publishPackets();
+//	void publishPackets();
 
 private:
 	struct logImu {
@@ -204,23 +207,23 @@ private:
 	} 
 
 	void cmdHoverSetpoint(
-		const crazyflie_gazebo::Hover::ConstPtr& msg);
+		const crazyflie_driver::Hover::ConstPtr& msg);
 
 	void cmdStop(
 		const std_msgs::Empty::ConstPtr& msg);
 
 	void cmdPositionSetpoint(
-		const crazyflie_gazebo::Position::ConstPtr& msg);
+		const crazyflie_driver::Position::ConstPtr& msg);
 
 	bool updateParams(
-		crazyflie_gazebo::UpdateParams::Request& req,
-		crazyflie_gazebo::UpdateParams::Response& res);
+		crazyflie_driver::UpdateParams::Request& req,
+		crazyflie_driver::UpdateParams::Response& res);
 
 	void cmdVelChanged(
 		const geometry_msgs::Twist::ConstPtr& msg);
 
 	void cmdFullStateSetpoint(
-		const crazyflie_gazebo::FullState::ConstPtr& msg);
+		const crazyflie_driver::FullState::ConstPtr& msg);
 
 	void positionMeasurementChanged(
 		const geometry_msgs::PointStamped::ConstPtr& msg);
@@ -234,7 +237,7 @@ private:
 	void onLogCustom(uint32_t time_in_ms, std::vector<double>* values, void* userData);
 
 /*************** Additions/Modifications for Simulation ****************/
-	void onLogLinkStatsData(uint32_t time_in_ms, logLinkStats* data);
+	// void onLogLinkStatsData(uint32_t time_in_ms, logLinkStats* data);
 
 	void onImuSimDataResponse(const crtpImuSimDataResponse* data);
 
@@ -249,33 +252,35 @@ private:
 
 	void onConsole(const char* msg) ;
 
+	void onGenericPacket(const ITransport::Ack& ack);
+
 	bool setGroupMask(
-		crazyflie_gazebo::SetGroupMask::Request& req,
-		crazyflie_gazebo::SetGroupMask::Response& res);
+		crazyflie_driver::SetGroupMask::Request& req,
+		crazyflie_driver::SetGroupMask::Response& res);
 
 	bool takeoff(
-		crazyflie_gazebo::Takeoff::Request& req,
-		crazyflie_gazebo::Takeoff::Response& res);
+		crazyflie_driver::Takeoff::Request& req,
+		crazyflie_driver::Takeoff::Response& res);
 
 	bool land(
-		crazyflie_gazebo::Land::Request& req,
-		crazyflie_gazebo::Land::Response& res);
+		crazyflie_driver::Land::Request& req,
+		crazyflie_driver::Land::Response& res);
 
 	bool stop(
-		crazyflie_gazebo::Stop::Request& req,
-		crazyflie_gazebo::Stop::Response& res);
+		crazyflie_driver::Stop::Request& req,
+		crazyflie_driver::Stop::Response& res);
 
 	bool goTo(
-		crazyflie_gazebo::GoTo::Request& req,
-		crazyflie_gazebo::GoTo::Response& res);
+		crazyflie_driver::GoTo::Request& req,
+		crazyflie_driver::GoTo::Response& res);
 
 	bool uploadTrajectory(
-		crazyflie_gazebo::UploadTrajectory::Request& req,
-		crazyflie_gazebo::UploadTrajectory::Response& res);
+		crazyflie_driver::UploadTrajectory::Request& req,
+		crazyflie_driver::UploadTrajectory::Response& res);
 
 	bool startTrajectory(
-		crazyflie_gazebo::StartTrajectory::Request& req,
-		crazyflie_gazebo::StartTrajectory::Response& res);
+		crazyflie_driver::StartTrajectory::Request& req,
+		crazyflie_driver::StartTrajectory::Response& res);
 
 private:
 	Crazyflie m_cf;
@@ -285,7 +290,7 @@ private:
 	float m_pitch_trim;
 	bool m_enableLogging;
 	bool m_enableParameters;
-	std::vector<crazyflie_gazebo::LogBlock> m_logBlocks;
+	std::vector<crazyflie_driver::LogBlock> m_logBlocks;
 	bool m_use_ros_time;
 	bool m_enable_logging_imu;
 	bool m_enable_logging_temperature;
@@ -293,11 +298,10 @@ private:
 	bool m_enable_logging_pressure;
 	bool m_enable_logging_battery;
 	bool m_enable_logging_packets;
-	bool m_enable_logging_pose;
-	bool m_enable_logging_setpoint_pose;
 
 	ros::ServiceServer m_serviceEmergency;
 	ros::ServiceServer m_serviceUpdateParams;
+	ros::ServiceServer m_sendPacketServer;
 
   	// High-level setpoints
 	ros::ServiceServer m_serviceSetGroupMask;
@@ -321,6 +325,7 @@ private:
 	ros::Publisher m_pubBattery;
 	ros::Publisher m_pubPackets;
 	ros::Publisher m_pubRssi;
+
 	ros::Publisher m_pubState;
 	ros::Publisher m_pubSetpointState;
 
@@ -328,12 +333,17 @@ private:
 
 	bool m_sentSetpoint;
 	bool m_sentExternalPosition;
+	
 /*************** Additions/Modifications for Simulation ****************/
+	bool m_enable_logging_pose;
+	bool m_enable_logging_setpoint_pose;
+
 	std::unique_ptr<LogBlock<logImu> > logBlockImu;
 	std::unique_ptr<LogBlock<log2> > logBlock2;
-	std::unique_ptr<LogBlock<logLinkStats> > logStatsData;
+	// std::unique_ptr<LogBlock<logLinkStats> > logStatsData;
 	std::unique_ptr<LogBlock<logState> > logStateData;
 	std::unique_ptr<LogBlock<logState> > logSetpointStateData;
+	std::vector<std::unique_ptr<LogBlockGeneric> > logBlocksGeneric;
 
 	bool first_pos_sent;
 	bool m_gyrobias_found;
@@ -356,12 +366,12 @@ public:
 private:
 
 	bool add_crazyflie(
-		crazyflie_gazebo::AddCrazyflie::Request  &req,
-		crazyflie_gazebo::AddCrazyflie::Response &res);
+		crazyflie_driver::AddCrazyflie::Request  &req,
+		crazyflie_driver::AddCrazyflie::Response &res);
 
 	bool remove_crazyflie(
-		crazyflie_gazebo::RemoveCrazyflie::Request  &req,
-		crazyflie_gazebo::RemoveCrazyflie::Response &res);
+		crazyflie_driver::RemoveCrazyflie::Request  &req,
+		crazyflie_driver::RemoveCrazyflie::Response &res);
 
 private:
 	std::map<std::string, CrazyflieROS*> m_crazyflies;

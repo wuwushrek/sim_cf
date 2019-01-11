@@ -7,12 +7,12 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseStamped.h>
 
-#include <crazyflie_gazebo/Stop.h>
-#include <crazyflie_gazebo/UpdateParams.h>
-#include <crazyflie_gazebo/Land.h>
-#include <crazyflie_gazebo/Takeoff.h>
-#include <crazyflie_gazebo/Position.h>
-#include <crazyflie_gazebo/Hover.h>
+#include <crazyflie_driver/Stop.h>
+#include <crazyflie_driver/UpdateParams.h>
+#include <crazyflie_driver/Land.h>
+#include <crazyflie_driver/Takeoff.h>
+#include <crazyflie_driver/Position.h>
+#include <crazyflie_driver/Hover.h>
 
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
@@ -118,9 +118,9 @@ double land_duration = 4.0; //seconds
 int groupMask = 0;
 
 //Main values to send like position, velocity and acceleration
-crazyflie_gazebo::Position pos_control_msg;
+crazyflie_driver::Position pos_control_msg;
 geometry_msgs::Twist att_control_msg;
-crazyflie_gazebo::Hover vel_control_msg;
+crazyflie_driver::Hover vel_control_msg;
 
 //Getting feedback from the fcu
 geometry_msgs::Pose current_pose;
@@ -161,7 +161,7 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
     if (msg->buttons[start] == 1 && !last_is_arm){
         is_arm = !is_arm;
         if (!is_arm){
-            crazyflie_gazebo::Stop stop_srv;
+            crazyflie_driver::Stop stop_srv;
             stop_srv.request.groupMask = groupMask;
             stop_client.call(stop_srv);
             is_posctl = false;
@@ -179,7 +179,7 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_attctl = false;
         is_taking_off = true;
         is_landing = false;
-        crazyflie_gazebo::Takeoff takeoff_srv;
+        crazyflie_driver::Takeoff takeoff_srv;
         takeoff_srv.request.height = takeoff_height;
         takeoff_srv.request.duration = ros::Duration(takeoff_duration);
         takeoff_srv.request.groupMask = groupMask;
@@ -193,7 +193,7 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_attctl = false;
         is_taking_off = false;
         is_landing = true;
-        crazyflie_gazebo::Land land_srv;
+        crazyflie_driver::Land land_srv;
         land_srv.request.height = 0;
         land_srv.request.duration = ros::Duration(land_duration);
         land_srv.request.groupMask = groupMask;
@@ -416,19 +416,19 @@ int main(int argc, char **argv)
     nh.setCallbackQueue(&m_callback_queue);
 
     //Publishers
-    pos_control_pub = nh.advertise<crazyflie_gazebo::Position>(POS_CONTROL_TOPIC , 10);
+    pos_control_pub = nh.advertise<crazyflie_driver::Position>(POS_CONTROL_TOPIC , 10);
     att_control_pub = nh.advertise<geometry_msgs::Twist>(ATT_CONTROL_TOPIC , 10);
-    vel_control_pub = nh.advertise<crazyflie_gazebo::Hover>(VEL_CONTROL_TOPIC , 10);
+    vel_control_pub = nh.advertise<crazyflie_driver::Hover>(VEL_CONTROL_TOPIC , 10);
 
     //Subscribers
     ros::Subscriber joy_sub =nh.subscribe<sensor_msgs::Joy>("joy",10,joy_callback);
     ros::Subscriber pose_subscriber = nh.subscribe<geometry_msgs::PoseStamped>("pose",10,curr_pos_callback);
 
     //Service
-    takeoff_client = nh.serviceClient<crazyflie_gazebo::Takeoff>(TAKEOFF_TOPIC);
-    land_client = nh.serviceClient<crazyflie_gazebo::Land>(LAND_TOPIC);
-    stop_client = nh.serviceClient<crazyflie_gazebo::Stop>(STOP_TOPIC);
-    update_params_client =  nh.serviceClient<crazyflie_gazebo::UpdateParams>(UPDATE_PARAMS_TOPIC);
+    takeoff_client = nh.serviceClient<crazyflie_driver::Takeoff>(TAKEOFF_TOPIC);
+    land_client = nh.serviceClient<crazyflie_driver::Land>(LAND_TOPIC);
+    stop_client = nh.serviceClient<crazyflie_driver::Stop>(STOP_TOPIC);
+    update_params_client =  nh.serviceClient<crazyflie_driver::UpdateParams>(UPDATE_PARAMS_TOPIC);
     
     //Main loop rate
     // ros::Rate main_rate(MAIN_LOOP_RATE);
@@ -442,7 +442,7 @@ int main(int argc, char **argv)
     }
     is_arm = true;
 
-    crazyflie_gazebo::UpdateParams m_params;
+    crazyflie_driver::UpdateParams m_params;
     m_params.request.params.push_back("commander/enHighLevel");
     ros::param::set("commander/enHighLevel" , 1);
     update_params_client.call(m_params);

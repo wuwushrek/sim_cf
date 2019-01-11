@@ -269,36 +269,7 @@
       </plugin>
     </gazebo>
   </xacro:macro>
-
-  <!-- CRTP Interface -->
-  <xacro:macro name="crtp_interface_macro" 
-    params="namespace imu_sub_topic mag_sub_topic pressure_sub_topic motors_speeds_pub_topic rotor_count uri roll_trim pitch_trim enable_logging use_ros_time enable_logging_imu enable_logging_magnetic_field enable_logging_temperature enable_logging_pressure enable_logging_battery enable_logging_packets enable_parameters">
-    <gazebo>
-      <plugin name="crtp_interface" filename="libgazebo_crtp_interface.so">
-        <robotNamespace>${namespace}</robotNamespace>
-        <imuSubTopic>${imu_sub_topic}</imuSubTopic>
-        <magnetometerTopic>${mag_sub_topic}</magnetometerTopic>
-        <pressureTopic>${pressure_sub_topic}</pressureTopic>
-        <motorSpeedsPubTopic>${motors_speeds_pub_topic}</motorSpeedsPubTopic>
-        <crazyflieURI>${uri}</crazyflieURI>
-        <rollTrim>${roll_trim}</rollTrim>
-        <pitchTrim>${pitch_trim}</pitchTrim>
-        <enableLogging>${enable_logging}</enableLogging>
-        <useRosTime>${use_ros_time}</useRosTime>
-        <enableLoggingImu>${enable_logging_imu}</enableLoggingImu>
-        <enableLoggingTemperature>${enable_logging_temperature}</enableLoggingTemperature>
-        <enableLoggingMagneticField>${enable_logging_magnetic_field}</enableLoggingMagneticField>
-        <enableLoggingPressure>${enable_logging_pressure}</enableLoggingPressure>
-        <enableLoggingBattery>${enable_logging_battery}</enableLoggingBattery>
-        <enableLoggingPackets>${enable_logging_packets}</enableLoggingPackets>
-        <enableParameters>${enable_parameters}</enableParameters>
-        <!-- <gpsUpdateFreq>${gps_update_freq}</gpsUpdateFreq> Frequency of HIL GPS messages [Hz] -->
-        <rotorCount>${rotor_count}</rotorCount>
-        <!-- https://www.ngdc.noaa.gov/geomag/WMM/calculators.shtml -->
-      </plugin>
-    </gazebo>
-  </xacro:macro>
-
+  
   <xacro:macro name="ghost_plugin_macro" 
     params="poseTopic">
     <gazebo>

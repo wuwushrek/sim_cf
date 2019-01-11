@@ -7,17 +7,17 @@
   <arg name="gui" default="true"/>
   <arg name="paused" default="true"/>
 
+  <!-- Parameter used for the joystick -->
   <arg name="only_command" default="false" />
 
   <!--  Handler Arguments       -->
   <arg name="nbQuads" default="1" />
   <arg name="cfPrefix" default="cf" />
-  <arg name="udpPort" default="19950"/>
-  <arg name="handerName" default="handler1"/>
+  <arg name="uri" default="INADDR_ANY://19950"/>
+  <arg name="handlerName" default="handler1"/>
   <arg name="firstIndex" default="1"/>
 
   <!-- Crazyflie arguments -->
-  <arg name="is_hitl" default="false"/>
   <arg name="enable_logging" default="true" />
   <arg name="enable_parameters" default="true" />
   <arg name="use_ros_time" default="true" />
@@ -34,6 +34,15 @@
   <arg name="x_1" default="0.0" />
   <arg name="y_1" default="0.0" />
   <arg name="z_1" default="0.03" />
+
+
+    <!-- Some custom blocks for every crazyflie in the environment-->
+<!--   <rosparam>
+      genericLogTopics: ["log1", "log2"]
+      genericLogTopicFrequencies: [10, 100]
+      genericLogTopic_log1_Variables: ["pm.vbat"]
+      genericLogTopic_log2_Variables: ["acc.x", "acc.y", "acc.z"]
+  </rosparam> -->
 
   <!-- The following line causes gzmsg and gzerr messages to be printed to the console
       (even when Gazebo is started through roslaunch) -->
@@ -53,12 +62,11 @@
   <!-- Spawn the crazyflie model -->
   <group ns="$(arg cfPrefix)1">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
-      <arg name="tf_prefix" value="$(arg tf_prefix_1)"/>
       <arg name="color_prop_front" default="$(arg color_prop_front_1)" />
       <arg name="color_prop_back" default="$(arg color_prop_back_1)" />
+      <arg name="tf_prefix" value="$(arg tf_prefix_1)"/>
       <arg name="x" default="$(arg x_1)"/>
       <arg name="y" default="$(arg y_1)"/>
       <arg name="z" default="$(arg z_1)"/>
@@ -66,12 +74,12 @@
   </group>
 
   <!-- Spawn the crazyflie handler model -->
-  <group ns="$(arg handerName)">
+  <group ns="$(arg handlerName)">
     <include file="$(find crazyflie_gazebo)/launch/spawn_plugin.launch">
-      <arg name="plugin_name" value="$(arg handerName)" />
+      <arg name="plugin_name" value="$(arg handlerName)" />
       <arg name="nbQuads" value="$(arg nbQuads)" />
       <arg name="cfPrefix" value="$(arg cfPrefix)" />
-      <arg name="udpPort" value="$(arg udpPort)" />
+      <arg name="uri" value="$(arg uri)" />
       <arg name="firstIndex" value="$(arg firstIndex)" />
 
       <arg name="enable_logging" value="$(arg enable_logging)"/>

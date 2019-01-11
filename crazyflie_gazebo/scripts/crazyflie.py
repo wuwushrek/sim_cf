@@ -2,8 +2,8 @@
 
 import rospy
 import numpy as np
-from crazyflie_gazebo.srv import *
-from crazyflie_gazebo.msg import TrajectoryPolynomialPiece
+from crazyflie_driver.srv import *
+from crazyflie_driver.msg import TrajectoryPolynomialPiece
 
 def arrayToGeometryPoint(a):
     return geometry_msgs.msg.Point(a[0], a[1], a[2])

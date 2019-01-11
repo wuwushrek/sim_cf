@@ -19,7 +19,7 @@
   <xacro:property name="enable_parameters" value="$(arg enable_parameters)" />
   <xacro:property name="nbQuads" value="$(arg nbQuads)" />
   <xacro:property name="cfPrefix" value="$(arg cfPrefix)" />
-  <xacro:property name="udpPort" value="$(arg udpPort)" />
+  <xacro:property name="uri" value="$(arg uri)" />
   <xacro:property name="firstIndex" value="$(arg firstIndex)" />
 
   <xacro:include filename="$(arg rotors_description_dir)/urdf/component_snippets.xacro"/>
@@ -46,7 +46,7 @@
         <enableParameters>${enable_parameters}</enableParameters>
         <nbQuads>${nbQuads}</nbQuads>
         <cfPrefix>${cfPrefix}</cfPrefix>
-        <udpPort>${udpPort}</udpPort>
+        <uri>${uri}</uri>
         <firstIndex>${firstIndex}</firstIndex>
       </plugin>
   </gazebo>

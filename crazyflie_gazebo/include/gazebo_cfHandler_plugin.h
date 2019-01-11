@@ -62,7 +62,7 @@ namespace gazebo {
 	static const std::string kDefaultFluidPressureTopic = "gazebo/air_pressure";
 	static const std::string kDefaultLpsTopic = "gazebo/lps";
 	static const std::string kDefaultCfPrefix = "cf";
-	static const int kDefaultCfPort = 19950;
+	static const std::string kDefaultURI = "INADDR_ANY://19950";
 	static const int kDefaultCfNbQuads = 1;
 
 	typedef struct _SensorsData {
@@ -86,7 +86,8 @@ namespace gazebo {
 			world_(nullptr),
 			isPluginOn(true),
 			nbQuads(kDefaultCfNbQuads),
-			port(kDefaultCfPort),
+			uri(kDefaultURI),
+			is_hitl(false),
 			first_index(1)
 			{}
 		~GazeboCfHandler();
@@ -106,6 +107,7 @@ namespace gazebo {
 		std::string fluid_pressure_sub_topic_;
 		std::string lps_sub_topic_;
 
+		std::string uri;
 		bool enable_logging;
 		bool enable_logging_imu;
 		bool enable_logging_magnetic_field;
@@ -115,8 +117,10 @@ namespace gazebo {
 		bool enable_logging_battery;
 		bool enable_logging_packets;
 		bool use_ros_time;
+		std::vector<crazyflie_driver::LogBlock> logBlocks;
+		bool is_hitl;
 
-		// Crazyradio::Ack ack_;
+		// ITransport::Ack ack_;
 		// std::vector<crazyflie_gazebo::LogBlock> logBlock_;
 		CrazyflieROS* cfROS_[MAX_QUADS];
 		std::string cf_prefix;
@@ -135,7 +139,7 @@ namespace gazebo {
 
 		// send and recv functions
 		bool send(const uint8_t* data, uint32_t length, int index);
-		void recv(Crazyradio::Ack &ack , int64_t timeout , int index);
+		void recv(ITransport::Ack &ack , int64_t timeout , int index);
 		
 		// Threads main function
 		void handleMessage(uint8_t* data , int len, uint8_t index);
@@ -160,7 +164,7 @@ namespace gazebo {
 		bool isPluginOn;
 
 		// Queue for exchanging messages between recv and ros/sender threads
-		moodycamel::BlockingReaderWriterQueue<Crazyradio::Ack> m_queue[MAX_QUADS];
+		moodycamel::BlockingReaderWriterQueue<ITransport::Ack> m_queue[MAX_QUADS];
 		moodycamel::BlockingReaderWriterQueue<SensorsData> m_queueSend;
 		moodycamel::ReaderWriterQueue<int> cfToInitialize;
 		moodycamel::ReaderWriterQueue<int> subPubToInitialize;
@@ -183,6 +187,7 @@ namespace gazebo {
 		} m_motor_command_[MAX_QUADS];
 		transport::PublisherPtr motor_velocity_reference_pub_[MAX_QUADS];
 		void writeMotors();
+		void onMotorsDataCallback(const crtpMotorsDataResponse* motorsData);
 
 		// recv thread
 		std::thread receiverThread;

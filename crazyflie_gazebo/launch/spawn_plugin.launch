@@ -19,7 +19,7 @@
   <arg name="enable_logging_packets" default="false" />
   <arg name="nbQuads" default="1" />
   <arg name="cfPrefix" default="cf" />
-  <arg name="udpPort" default="19950" />
+  <arg name="uri" default="INADDR_ANY://19950" />
   <arg name="firstIndex" default="1" />
 
 
@@ -39,7 +39,7 @@
     enable_logging_packets:=$(arg enable_logging_packets)
     nbQuads:=$(arg nbQuads)
     cfPrefix:=$(arg cfPrefix)
-    udpPort:=$(arg udpPort)
+    uri:=$(arg uri)
     firstIndex:=$(arg firstIndex) --inorder"
   />
 
