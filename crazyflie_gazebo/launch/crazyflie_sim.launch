@@ -7,9 +7,6 @@
   <arg name="gui" default="true"/>
   <arg name="paused" default="true"/>
 
-  <!-- Parameter used for the joystick -->
-  <arg name="only_command" default="false" />
-
   <!--  Handler Arguments       -->
   <arg name="nbQuads" default="1" />
   <arg name="cfPrefix" default="cf" />
@@ -35,14 +32,13 @@
   <arg name="y_1" default="0.0" />
   <arg name="z_1" default="0.03" />
 
-
-    <!-- Some custom blocks for every crazyflie in the environment-->
-<!--   <rosparam>
-      genericLogTopics: ["log1", "log2"]
-      genericLogTopicFrequencies: [10, 100]
-      genericLogTopic_log1_Variables: ["pm.vbat"]
-      genericLogTopic_log2_Variables: ["acc.x", "acc.y", "acc.z"]
-  </rosparam> -->
+  <!-- Some custom blocks for every crazyflie in the environment-->
+  <rosparam>
+      genericLogTopics: ["pos","targetPos"]
+      genericLogTopicFrequencies: [10,10]
+      genericLogTopic_pos_Variables: ["stateEstimate.x", "stateEstimate.y", "stateEstimate.z"]
+      genericLogTopic_targetPos_Variables: ["posCtl.targetX", "posCtl.targetY", "posCtl.targetZ"]
+  </rosparam>
 
   <!-- The following line causes gzmsg and gzerr messages to be printed to the console
       (even when Gazebo is started through roslaunch) -->

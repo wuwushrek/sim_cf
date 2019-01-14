@@ -34,25 +34,30 @@ void GazeboCfGHostPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 	// Create ROS subscriber and ros handler
 	ros::NodeHandle n;
 	poseSubscriber = n.subscribe(m_pose_topic, 1, &GazeboCfGHostPlugin::poseReceivedCallback, this);
+	model_->SetGravityMode(0);
 
-
+	last_pose = ignition::math::Pose3d(model_->GetWorldPose().pos.x, model_->GetWorldPose().pos.y , model_->GetWorldPose().pos.z,
+		model_->GetWorldPose().rot.w,model_->GetWorldPose().rot.x,model_->GetWorldPose().rot.y,model_->GetWorldPose().rot.z);
 }
 
 void GazeboCfGHostPlugin::OnUpdate(const common::UpdateInfo& /*_info*/)
 {
+	model_->SetGravityMode(0);
 	gz_mav_msgs::CommandMotorSpeed m_motor_speed;
 	m_motor_speed.add_motor_speed(1000); // 0
 	m_motor_speed.add_motor_speed(1000); // 1
 	m_motor_speed.add_motor_speed(1000); // 2
 	m_motor_speed.add_motor_speed(1000); // 3
 	motor_velocity_reference_pub_->Publish(m_motor_speed);
+	model_->SetWorldPose(last_pose);
 }
 
-void GazeboCfGHostPlugin::poseReceivedCallback(const geometry_msgs::PoseStamped::ConstPtr& position)
+void GazeboCfGHostPlugin::poseReceivedCallback(const crazyflie_driver::GenericLogData::ConstPtr& position)
 {
 
-	model_->SetWorldPose(ignition::math::Pose3d(position->pose.position.x , position->pose.position.y , position->pose.position.z, 
-		position->pose.orientation.w , position->pose.orientation.x , position->pose.orientation.y , position->pose.orientation.z));
+	/*last_pose=ignition::math::Pose3d(position->pose.position.x , position->pose.position.y , position->pose.position.z, 
+		position->pose.orientation.w , position->pose.orientation.x , position->pose.orientation.y , position->pose.orientation.z);*/
+	last_pose=ignition::math::Pose3d(position->values[0] , position->values[1] , position->values[2], 1.0, 0,0,0);
 }
 
 }

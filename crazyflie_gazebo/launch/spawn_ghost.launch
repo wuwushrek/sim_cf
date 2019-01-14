@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="model" default="$(find crazyflie_gazebo)/models/rotors_description/urdf/crazyflie_ghost_base.xacro"/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.03"/>
+  <arg name="rotors_description_dir" default="$(find crazyflie_gazebo)/models/rotors_description"/>
+  <arg name="modelName" default="ghost1"/>
+  
+  <arg name="allow_collision" default="false" />
+  <arg name="color_prop_front" default="White" />
+  <arg name="color_prop_back" default="White" />
+  <arg name="poseTopic" default="/cf1/setpoint_pose" />
+
+
+  <!-- send the robot XML to param server -->
+  <param name="robot_description" command="
+    $(find xacro)/xacro '$(arg model)'
+    rotors_description_dir:=$(arg rotors_description_dir)
+    color_prop_back:=$(arg color_prop_back)
+    color_prop_front:=$(arg color_prop_front)
+    allow_collision:=$(arg allow_collision)
+    poseTopic:=$(arg poseTopic)
+    namespace:=$(arg modelName) --inorder"
+  />
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_$(arg modelName)" pkg="gazebo_ros" type="spawn_model"
+   args="-param robot_description
+         -urdf
+         -x $(arg x)
+         -y $(arg y)
+         -z $(arg z)
+         -model $(arg modelName)"
+   respawn="false" output="screen">
+  </node>
+</launch>

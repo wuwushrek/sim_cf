@@ -105,8 +105,8 @@ CrazyflieROS::CrazyflieROS(
 , m_enable_logging_pressure(enable_logging_pressure)
 , m_enable_logging_battery(enable_logging_battery)
 , m_enable_logging_packets(enable_logging_packets)
-, m_enable_logging_pose(true)
-, m_enable_logging_setpoint_pose(true)
+, m_enable_logging_pose(false)
+, m_enable_logging_setpoint_pose(false)
 , m_serviceEmergency()
 , m_serviceUpdateParams()
 , m_serviceSetGroupMask()
@@ -167,11 +167,11 @@ void CrazyflieROS::resetKalmanFilter()
     updateParam<float , float>(entry_initX->id , kalman_initX);
     updateParam<float , float>(entry_initY->id , kalman_initY);
     updateParam<float , float>(entry_initZ->id , kalman_initZ);
-    // ros::Duration(0.5).sleep(); // lazy trick to wait enough for the params to init
+    ros::Duration(0.5).sleep(); // lazy trick to wait enough for the params to init
 
     ros::param::set(reset_estim , 1);
     updateParam<uint8_t , int>(entry_resetEstim->id , reset_estim);
-    ros::Duration(0.1).sleep(); // lazy trick to avoid restart of cf2 in hitl
+    ros::Duration(0.5).sleep(); // lazy trick to avoid restart of cf2 in hitl
 
     ROS_INFO("[%s] RESET OF KALMAN DONE !" , m_tf_prefix.c_str());
     first_pos_sent = true;
@@ -199,11 +199,11 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
   //n.setCallbackQueue(&m_callback_queue);
 
   // solve LIBUSB_ERROR_TIMEOUT by trying to poll params info
-  /*try {
+  try {
     m_cf.requestParamToc();
   } catch (std::runtime_error& e){
     ROS_INFO("[%s] Runtime Error catched : %s" , m_tf_prefix.c_str() , e.what());
-  }*/
+  }
 
   ROS_INFO("[%s] Creating CrazyflieROS services " , m_tf_prefix.c_str());
 

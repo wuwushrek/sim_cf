@@ -25,7 +25,7 @@ if __name__ == '__main__':
     cf.setParam("commander/enHighLevel", 1)
 
     cf.takeoff(targetHeight = 1.5, duration = 2.0)
-    time.sleep(10.0)
+    time.sleep(5.0)
 
     # (t , x , y) = circle_trajectory(50 , 10 , 0.8)
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     # # time.sleep(15.0)
 
     cf.land(targetHeight = 0.0, duration = 2.0)
-    time.sleep(15.0)
+    time.sleep(3.0)
     
     # traj1 = uav_trajectory.Trajectory()
     # traj1.loadcsv("takeoff.csv")

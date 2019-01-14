@@ -111,8 +111,8 @@ public:
 		bool enable_logging_pressure,
 		bool enable_logging_battery,
 		bool enable_logging_packets,
-		bool enable_logging_pose = true,
-		bool enable_logging_setpoint_pose = true);
+		bool enable_logging_pose = false,
+		bool enable_logging_setpoint_pose = false);
 
 	void setOnMotorsData(std::function<void(const crtpMotorsDataResponse*)> cb);
 

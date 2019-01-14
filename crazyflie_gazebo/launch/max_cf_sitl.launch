@@ -8,7 +8,6 @@
   <arg name="paused" default="true"/>
 
   <!-- Crazyflie arguments -->
-  <arg name="is_hitl" default="false"/>
   <arg name="enable_logging" default="true" />
   <arg name="enable_parameters" default="true" />
   <arg name="use_ros_time" default="true" />
@@ -95,10 +94,9 @@
     <arg name="verbose" value="$(arg verbose)"/>
   </include>
 
-  <!-- Spawn all the seven crazyflie models (This just launchs all the sensors pub/sub and graphical models) -->
+  <!-- Spawn all the seven crazyflie models in gazebo -->
   <group ns="$(arg cfPrefix)1">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
       <arg name="tf_prefix" value="$(arg tf_prefix_1)"/>
@@ -112,7 +110,6 @@
 
   <group ns="$(arg cfPrefix)2">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
       <arg name="tf_prefix" value="$(arg tf_prefix_2)"/>
@@ -126,7 +123,6 @@
 
    <group ns="$(arg cfPrefix)3">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
       <arg name="tf_prefix" value="$(arg tf_prefix_3)"/>
@@ -140,7 +136,6 @@
   
    <group ns="$(arg cfPrefix)4">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
       <arg name="tf_prefix" value="$(arg tf_prefix_4)"/>
@@ -154,7 +149,6 @@
 
   <group ns="$(arg cfPrefix)5">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
       <arg name="tf_prefix" value="$(arg tf_prefix_5)"/>
@@ -168,7 +162,6 @@
 
   <group ns="$(arg cfPrefix)6">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
       <arg name="tf_prefix" value="$(arg tf_prefix_6)"/>
@@ -182,7 +175,6 @@
 
   <group ns="$(arg cfPrefix)7">
     <include file="$(find crazyflie_gazebo)/launch/spawn_mav.launch">
-      <arg name="is_hitl" value="$(arg is_hitl)"/>
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find crazyflie_gazebo)/models/rotors_description/urdf/$(arg mav_name)_base.xacro" />
       <arg name="tf_prefix" value="$(arg tf_prefix_7)"/>
@@ -202,7 +194,7 @@
       <arg name="plugin_name" value="cfHandler1" />
       <arg name="nbQuads" value="4" />
       <arg name="cfPrefix" value="$(arg cfPrefix)" /> 
-      <arg name="udpPort" value="19950" /> <!--Port for the first 4 cfs -->
+      <arg name="uri" value="INADDR_ANY://19950" /> <!--Port for the first 4 cfs -->
       <arg name="firstIndex" value="1" /> <!-- First crazyflie index -->
 
       <arg name="enable_logging" value="$(arg enable_logging)"/>
@@ -223,7 +215,7 @@
       <arg name="plugin_name" value="cfHandler2" />
       <arg name="nbQuads" value="3" />
       <arg name="cfPrefix" value="$(arg cfPrefix)" />
-      <arg name="udpPort" value="19951" /> <!--Port for the first 4 cfs -->
+      <arg name="uri" value="INADDR_ANY://19951" /> <!--Port for the first 4 cfs -->
       <arg name="firstIndex" value="5" /> <!-- First crazyflie index of this handler-->
 
       <arg name="enable_logging" value="$(arg enable_logging)"/>

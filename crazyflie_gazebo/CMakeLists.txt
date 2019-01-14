@@ -231,67 +231,67 @@ link_directories(
 
 # sudo apt-get install ros-kinetic-pr2-simulator
 
-set(enable_wind "false")
+# set(enable_wind "false")
 
-set(rotors_description_dir "${CMAKE_CURRENT_SOURCE_DIR}/models/rotors_description")
-set(scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+# set(rotors_description_dir "${CMAKE_CURRENT_SOURCE_DIR}/models/rotors_description")
+# set(scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 
-set(uri "INADDR_ANY://19950")
-set(enable_ground_truth "true")
-set(color_prop_front "Blue")
-set(color_prop_back "Red")
-set(namespace "/")
+# set(uri "INADDR_ANY://19950")
+# set(enable_ground_truth "true")
+# set(color_prop_front "Blue")
+# set(color_prop_back "Red")
+# set(namespace "/")
 
-set(enable_logging "true")
-set(use_ros_time "true")
-set(enable_logging_imu "true")
-set(enable_logging_packets "false")
-set(enable_logging_magnetic_field "false")
-set(enable_logging_temperature "false")
-set(enable_logging_pressure "false")
-set(enable_logging_battery "false")
-set(enable_parameters "true")
+# set(enable_logging "true")
+# set(use_ros_time "true")
+# set(enable_logging_imu "true")
+# set(enable_logging_packets "false")
+# set(enable_logging_magnetic_field "false")
+# set(enable_logging_temperature "false")
+# set(enable_logging_pressure "false")
+# set(enable_logging_battery "false")
+# set(enable_parameters "true")
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
-  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_base.urdf  ${rotors_description_dir}/urdf/crazyflie_base.xacro namespace:=${namespace} enable_wind:=${enable_wind} enable_ground_truth:=${enable_ground_truth} color_prop_front:=${color_prop_front} color_prop_back:=${color_prop_back} rotors_description_dir:=${rotors_description_dir}
-  COMMAND gz sdf -p  ${rotors_description_dir}/urdf/crazyflie_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
-  COMMAND rm -f ${rotors_description_dir}/urdf/crazyflie_base.urdf
-  DEPENDS ${rotors_description_dir}/urdf/crazyflie.xacro
-  DEPENDS ${rotors_description_dir}/urdf/crazyflie_base.xacro
-  DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
-  )
-add_custom_target(crazyflie_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf)
+# add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
+#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#   COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
+#   COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_base.urdf  ${rotors_description_dir}/urdf/crazyflie_base.xacro namespace:=${namespace} enable_wind:=${enable_wind} enable_ground_truth:=${enable_ground_truth} color_prop_front:=${color_prop_front} color_prop_back:=${color_prop_back} rotors_description_dir:=${rotors_description_dir}
+#   COMMAND gz sdf -p  ${rotors_description_dir}/urdf/crazyflie_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
+#   COMMAND rm -f ${rotors_description_dir}/urdf/crazyflie_base.urdf
+#   DEPENDS ${rotors_description_dir}/urdf/crazyflie.xacro
+#   DEPENDS ${rotors_description_dir}/urdf/crazyflie_base.xacro
+#   DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
+#   )
+# add_custom_target(crazyflie_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf)
 
-set(nbQuads "1")
-set(cfPrefix "cf")
-set(uri "INADDR_ANY://19950")
-set(firstIndex "1")
+# set(nbQuads "1")
+# set(cfPrefix "cf")
+# set(uri "INADDR_ANY://19950")
+# set(firstIndex "1")
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
-  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/cfHandler_base.urdf  ${rotors_description_dir}/urdf/cfHandler_base.xacro nbQuads:=${nbQuads} cfPrefix:=${cfPrefix} enable_parameters:=${enable_parameters} enable_logging:=${enable_logging} uri:=${uri} firstIndex:=${firstIndex} rotors_description_dir:=${rotors_description_dir} use_ros_time:=${use_ros_time} enable_logging_battery:=${enable_logging_battery} enable_logging_pressure:=${enable_logging_pressure} enable_logging_temperature:=${enable_logging_temperature} enable_logging_imu:=${enable_logging_imu} enable_logging_packets:=${enable_logging_packets} enable_logging_magnetic_field:=${enable_logging_magnetic_field}
-  COMMAND gz sdf -p  ${rotors_description_dir}/urdf/cfHandler_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
-  COMMAND rm -f ${rotors_description_dir}/urdf/cfHandler_base.urdf
-  DEPENDS ${rotors_description_dir}/urdf/cfHandler_base.xacro
-  DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
-  )
-add_custom_target(cfHandler_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf)
+# add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
+#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#   COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
+#   COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/cfHandler_base.urdf  ${rotors_description_dir}/urdf/cfHandler_base.xacro nbQuads:=${nbQuads} cfPrefix:=${cfPrefix} enable_parameters:=${enable_parameters} enable_logging:=${enable_logging} uri:=${uri} firstIndex:=${firstIndex} rotors_description_dir:=${rotors_description_dir} use_ros_time:=${use_ros_time} enable_logging_battery:=${enable_logging_battery} enable_logging_pressure:=${enable_logging_pressure} enable_logging_temperature:=${enable_logging_temperature} enable_logging_imu:=${enable_logging_imu} enable_logging_packets:=${enable_logging_packets} enable_logging_magnetic_field:=${enable_logging_magnetic_field}
+#   COMMAND gz sdf -p  ${rotors_description_dir}/urdf/cfHandler_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf
+#   COMMAND rm -f ${rotors_description_dir}/urdf/cfHandler_base.urdf
+#   DEPENDS ${rotors_description_dir}/urdf/cfHandler_base.xacro
+#   DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
+#   )
+# add_custom_target(cfHandler_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/cfHandler/cfHandler.sdf)
 
-set(poseTopic "/cf1/pose")
+# set(poseTopic "/cf1/pose")
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
-  COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf  ${rotors_description_dir}/urdf/crazyflie_ghost_base.xacro poseTopic:=${poseTopic} namespace:=${namespace} rotors_description_dir:=${rotors_description_dir} color_prop_front:=${color_prop_front} color_prop_back:=${color_prop_back}
-  COMMAND gz sdf -p  ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
-  COMMAND rm -f ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf
-  DEPENDS ${rotors_description_dir}/urdf/crazyflie_ghost_base.xacro
-  DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
-  )
-add_custom_target(crazyflie_ghost_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf)
+# add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
+#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#   COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
+#   COMMAND ${PYTHON_EXECUTABLE} ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf  ${rotors_description_dir}/urdf/crazyflie_ghost_base.xacro poseTopic:=${poseTopic} namespace:=${namespace} rotors_description_dir:=${rotors_description_dir} color_prop_front:=${color_prop_front} color_prop_back:=${color_prop_back}
+#   COMMAND gz sdf -p  ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf
+#   COMMAND rm -f ${rotors_description_dir}/urdf/crazyflie_ghost_base.urdf
+#   DEPENDS ${rotors_description_dir}/urdf/crazyflie_ghost_base.xacro
+#   DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
+#   )
+# add_custom_target(crazyflie_ghost_sf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie_ghost/crazyflie_ghost.sdf)
 
 
 #-----------#

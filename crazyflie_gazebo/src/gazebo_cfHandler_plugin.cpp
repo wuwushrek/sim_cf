@@ -13,8 +13,10 @@ GazeboCfHandler::~GazeboCfHandler(){
 		isInit[i] = false;
 		delete cfROS_[i];
 	}
-	senderThread.join();
-	receiverThread.join();
+	if (!is_hitl){
+		senderThread.join();
+		receiverThread.join();
+	}
 }
 
 void GazeboCfHandler::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
@@ -333,8 +335,8 @@ void GazeboCfHandler::cfROSThread()
 			if (isInit[i])
 				cfROS_[i]->updateInformation();
 		}
-		m_callback_queue.callAvailable(ros::WallDuration(0.002));
-		// std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		m_callback_queue.callAvailable(ros::WallDuration(0.0));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
 }

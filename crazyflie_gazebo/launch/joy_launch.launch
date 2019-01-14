@@ -3,14 +3,16 @@
 <launch>
 
   <arg name="only_command" default="false" />
-  <arg name="cfPrefix" default="crazyflie" />
+  <arg name="cfPrefix" default="cf1" />
+  <arg name="positionTopic" default="pos" />
   
-  <group ns= "$(arg cfPrefix)1">
+  <group ns= "$(arg cfPrefix)">
     <node pkg="joy" name="joy" type="joy_node" output="screen" >
-      <param name="autorepeat_rate" value="50"/>
+      <!-- <param name="autorepeat_rate" value="50"/> -->
     </node>
 
     <node pkg="crazyflie_gazebo" name="cf_joy" type="joy_control_node" output="screen">
+      <param name="positionTopic" value="$(arg positionTopic)" />
       <param name="only_command" value = "$(arg only_command)" />
       <param name="LB" value="4" />
       <param name="RB" value="5" />

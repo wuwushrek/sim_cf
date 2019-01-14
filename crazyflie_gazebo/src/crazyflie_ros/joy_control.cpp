@@ -1,11 +1,12 @@
 #include <ros/ros.h>
 #include <Eigen/Dense>
 #include <ros/callback_queue.h>
+#include <string>
+#include <future>
 
 #include <sensor_msgs/Joy.h>
 
 #include <geometry_msgs/Twist.h>
-#include <geometry_msgs/PoseStamped.h>
 
 #include <crazyflie_driver/Stop.h>
 #include <crazyflie_driver/UpdateParams.h>
@@ -13,6 +14,8 @@
 #include <crazyflie_driver/Takeoff.h>
 #include <crazyflie_driver/Position.h>
 #include <crazyflie_driver/Hover.h>
+#include <crazyflie_driver/GenericLogData.h>
+
 
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
@@ -28,7 +31,7 @@
 #define POS_VEL_CONTROL                 3
 #define ACC_ATT_CONTROL                 5     
 
-#define MAIN_LOOP_RATE             		20            		//main loop rate for getting more faster all the subscriber datas
+#define MAIN_LOOP_RATE             		100            		//main loop rate for getting more faster all the subscriber datas
 
 #define PI_                   			180.0		//3.1415926535897
 #define PITCH_MAX               		(PI_/20.0)    		//Max pitch angle allowed
@@ -74,6 +77,8 @@ ros::ServiceClient takeoff_client;                         //Takeoff service cli
 ros::ServiceClient land_client;                            //Land service client
 ros::ServiceClient update_params_client;                   //Update_params service client
 
+//position topic name
+std::string positionTopic;
 
 //Axes mapping for moving around the quad
 int left_axe_up_down;                          //Up|down left axis
@@ -123,8 +128,8 @@ geometry_msgs::Twist att_control_msg;
 crazyflie_driver::Hover vel_control_msg;
 
 //Getting feedback from the fcu
-geometry_msgs::Pose current_pose;
-double mc_given_yaw;
+geometry_msgs::Point current_pose;
+// double mc_given_yaw;
 
 double current_yaw;
 geometry_msgs::Point current_pos;
@@ -138,10 +143,10 @@ bool is_arm = false;
 
 //save last state of takeoff and land
 bool last_is_takeoff = false;
-bool is_taking_off = true;
+bool is_taking_off = false;
 
 bool last_is_landing = false;
-bool is_landing = true; 
+bool is_landing = false; 
 
 // bool current quad state
 bool is_posctl = false;
@@ -161,9 +166,9 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
     if (msg->buttons[start] == 1 && !last_is_arm){
         is_arm = !is_arm;
         if (!is_arm){
-            crazyflie_driver::Stop stop_srv;
+            /*crazyflie_driver::Stop stop_srv;
             stop_srv.request.groupMask = groupMask;
-            stop_client.call(stop_srv);
+            stop_client.call(stop_srv);*/
             is_posctl = false;
             is_velctl = false;
             is_attctl = false;
@@ -179,6 +184,7 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_attctl = false;
         is_taking_off = true;
         is_landing = false;
+        is_arm = true;
         crazyflie_driver::Takeoff takeoff_srv;
         takeoff_srv.request.height = takeoff_height;
         takeoff_srv.request.duration = ros::Duration(takeoff_duration);
@@ -193,6 +199,7 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_attctl = false;
         is_taking_off = false;
         is_landing = true;
+        is_arm = false;
         crazyflie_driver::Land land_srv;
         land_srv.request.height = 0;
         land_srv.request.duration = ros::Duration(land_duration);
@@ -220,6 +227,7 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_velctl = false;
         is_taking_off = false;
         is_landing = false;
+        is_arm = true;
         reset_control_type = true;
         ROS_WARN("POSITION CONTROL ACTIVATED ! ");
     }
@@ -231,6 +239,7 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_velctl = true;
         is_taking_off = false;
         is_landing = false;
+        is_arm = true;
         reset_control_type = true;
         ROS_WARN("VELOCITY CONTROL ACTIVATED !");
     }
@@ -242,14 +251,15 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_velctl = false;
         is_taking_off = false;
         is_landing = false;
+        is_arm = true;
         reset_control_type = true;
         ROS_WARN("ATTITUDE CONTROL ACTIVATED !");
     }
 
     //Make a call to the service if a type of control is requested
     if(reset_control_type){
-        current_yaw = mc_given_yaw;
-        current_pos = current_pose.position;
+        // current_yaw = mc_given_yaw;
+        current_pos = current_pose;
     }
 
     //Saving moves command
@@ -280,9 +290,12 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
 }
 
 //Pose data callback
-void curr_pos_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
-    current_pose = msg->pose;
-    mc_given_yaw = tf::getYaw(msg->pose.orientation);
+void curr_pos_callback(const crazyflie_driver::GenericLogData::ConstPtr& msg){
+    current_pose.x = msg->values[0];
+    current_pose.y = msg->values[1];
+    current_pose.z = msg->values[2];
+    // current_pose = msg->pose;
+    // mc_given_yaw = tf::getYaw(msg->pose.orientation);
 }
 
 int main(int argc, char **argv)
@@ -290,6 +303,11 @@ int main(int argc, char **argv)
 
     ros::init(argc,argv,"joy_command_node");
     ros::NodeHandle nh_params("~");
+
+    if (!nh_params.getParam("positionTopic", positionTopic)){
+        positionTopic = "position";
+        ROS_WARN("No parameter positionTopic provided. Using default value %s !", positionTopic.c_str());
+    }
 
     if(!nh_params.getParam("LB",LB)){
         LB = VEL_ACC;
@@ -422,7 +440,7 @@ int main(int argc, char **argv)
 
     //Subscribers
     ros::Subscriber joy_sub =nh.subscribe<sensor_msgs::Joy>("joy",10,joy_callback);
-    ros::Subscriber pose_subscriber = nh.subscribe<geometry_msgs::PoseStamped>("pose",10,curr_pos_callback);
+    ros::Subscriber pose_subscriber = nh.subscribe<crazyflie_driver::GenericLogData>(positionTopic,10,curr_pos_callback);
 
     //Service
     takeoff_client = nh.serviceClient<crazyflie_driver::Takeoff>(TAKEOFF_TOPIC);
@@ -431,16 +449,13 @@ int main(int argc, char **argv)
     update_params_client =  nh.serviceClient<crazyflie_driver::UpdateParams>(UPDATE_PARAMS_TOPIC);
     
     //Main loop rate
-    // ros::Rate main_rate(MAIN_LOOP_RATE);
+    ros::Rate main_rate(MAIN_LOOP_RATE);
 
     // Need to arm a first time before anything else
     while (!last_is_arm){
-        // ros::spinOnce();
-        m_callback_queue.callAvailable(ros::WallDuration(0.02));
-        //main_rate.sleep();
-        // std::this_thread::sleep_for(std::chrono::milliseconds(0.02));
+        m_callback_queue.callAvailable(ros::WallDuration(0.0));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    is_arm = true;
 
     crazyflie_driver::UpdateParams m_params;
     m_params.request.params.push_back("commander/enHighLevel");
@@ -448,10 +463,10 @@ int main(int argc, char **argv)
     update_params_client.call(m_params);
 
     //setting initial yaw and initial position
-	current_yaw = mc_given_yaw;
-	current_pos = current_pose.position;
+	current_yaw = 0;
+	current_pos = current_pose;
 
-	ROS_WARN("[JOY NODE ]:  initial yaw : %f ",current_yaw);
+	ROS_WARN("[JOY NODE ]:  initial pos : %f , %f , %f ",current_pos.x , current_pos.y , current_pos.z);
 
     ros::Time last_time = ros::Time::now();
     ros::Time current_time = ros::Time::now();
@@ -464,19 +479,19 @@ int main(int argc, char **argv)
         last_time = current_time;
 
         if (!is_posctl && !is_attctl && !is_velctl && !is_taking_off && !is_landing){
-            geometry_msgs::Twist arm_twist_msg;
+            /*geometry_msgs::Twist arm_twist_msg;
             if (is_arm)
                 arm_twist_msg.linear.z = 10000;
             else
                 arm_twist_msg.linear.z = 0;
-            att_control_pub.publish(arm_twist_msg);
+            att_control_pub.publish(arm_twist_msg);*/
         }
 
         if(!only_command && is_posctl){       //Position control
             current_pos.x += back_forward * max_speed_x * dt.toSec();
             current_pos.y += left_right * max_speed_y * dt.toSec();
             current_pos.z += up_down * max_speed_z * dt.toSec();
-            current_yaw += yaw * (yaw_max_rate) * dt.toSec();
+            // current_yaw += yaw * (yaw_max_rate) * dt.toSec();
             pos_control_msg.yaw = current_yaw;
             pos_control_msg.x = current_pos.x;
             pos_control_msg.y = current_pos.y;
@@ -494,15 +509,14 @@ int main(int argc, char **argv)
         if(!only_command && is_attctl){       //Attitude control
             att_control_msg.linear.y = - left_right * roll_max;
             att_control_msg.linear.x = back_forward * pitch_max;
-            current_yaw += yaw * (yaw_max_rate) * dt.toSec();
+            // current_yaw += yaw * (yaw_max_rate) * dt.toSec();
             att_control_msg.linear.z = up_down * throttle_max ;
             att_control_msg.angular.z = current_yaw;
             att_control_pub.publish(att_control_msg);
         }
 
-    	// ros::spinOnce();
-    	// main_rate.sleep();
-        m_callback_queue.callAvailable(ros::WallDuration(0.02));
+        m_callback_queue.callAvailable(ros::WallDuration(0.0));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     ros::param::set("commander/enHighLevel" , 0);

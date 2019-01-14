@@ -18,7 +18,8 @@
 #include <gazebo/msgs/msgs.hh>
 
 #include "ros/ros.h"
-#include "geometry_msgs/PoseStamped.h"
+
+#include <crazyflie_driver/GenericLogData.h>
 
 #include "common.h"
 
@@ -26,7 +27,7 @@
 
 namespace gazebo {
 
-	static const std::string kDefaultPoseTopic = "/cf1/pose";
+	static const std::string kDefaultPoseTopic = "/cf1/pos";
 
 	class GazeboCfGHostPlugin : public ModelPlugin {
 	public:
@@ -46,6 +47,7 @@ namespace gazebo {
 	private:
 
 		std::string m_pose_topic;
+		ignition::math::Pose3d last_pose;
 
 		transport::NodePtr node_handle_;
 		transport::PublisherPtr motor_velocity_reference_pub_;
@@ -57,6 +59,6 @@ namespace gazebo {
 		/// \brief Pointer to the update event connection.
 		event::ConnectionPtr updateConnection_;
 
-		void poseReceivedCallback(const geometry_msgs::PoseStamped::ConstPtr& position);
+		void poseReceivedCallback(const crazyflie_driver::GenericLogData::ConstPtr& pos);
 	};
 }

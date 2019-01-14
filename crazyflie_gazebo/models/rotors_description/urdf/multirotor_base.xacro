@@ -70,15 +70,22 @@
     <gazebo reference="base_link">
       <collision name='base_link_inertia_collision'>
         <surface>
-          <contact>
-            <ode>
-              <min_depth>0.001</min_depth>
-              <max_vel>0.0</max_vel>
-            </ode>
-          </contact>
-          <friction>
-            <ode/>
-          </friction>
+          <xacro:if value="$(arg allow_collision)">
+            <contact>
+              <ode>
+                <min_depth>0.001</min_depth>
+                <max_vel>0.0</max_vel>
+              </ode>
+            </contact>
+            <friction>
+              <ode/>
+            </friction>
+          </xacro:if>
+          <xacro:unless value="$(arg allow_collision)">
+            <contact>
+              <collide_without_contact>true</collide_without_contact>
+            </contact>
+          </xacro:unless>
         </surface>
       </collision>
    </gazebo>
