@@ -132,7 +132,7 @@ public:
 	void updateInformation();
 
 	/* Reset kalman filter when first gyro bias found is received */
-	void resetKalmanFilter();
+	// void resetKalmanFilter();
 
 /***********************************************************************/
 	~CrazyflieROS();

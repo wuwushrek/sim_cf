@@ -96,7 +96,7 @@ void GazeboCfHandler::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
 	}
 	std::string dest_addr = uri.substr(0, found);
 	std::string dest_port = uri.substr(found + delimiter.length());
-	if (dest_addr == "usb"){
+	if (dest_addr == "usb" || dest_addr == "radio"){
 		is_hitl = true;
 		gzdbg << "Simulation is in HITL mode for Handler : " << model_->GetName() << std::endl;
 	} else {

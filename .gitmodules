@@ -1,6 +1,3 @@
-[submodule "crazyflie-clients-python"]
-	path = crazyflie-clients-python
-	url = https://github.com/bitcraze/crazyflie-clients-python.git
 [submodule "crazyflie-firmware"]
 	path = crazyflie-firmware
 	url = https://github.com/wuwushrek/crazyflie-firmware.git

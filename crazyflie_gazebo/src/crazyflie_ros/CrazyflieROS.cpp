@@ -144,7 +144,7 @@ void CrazyflieROS::sendSensorsPacket(const uint8_t* data, uint32_t length){
   m_cf.sendPacketNoAck(data , length);
 }
 
-void CrazyflieROS::resetKalmanFilter()
+/*void CrazyflieROS::resetKalmanFilter()
 {
   if ((!first_pos_sent) && m_gyrobias_found){
     // declare kalman parameters
@@ -176,20 +176,25 @@ void CrazyflieROS::resetKalmanFilter()
     ROS_INFO("[%s] RESET OF KALMAN DONE !" , m_tf_prefix.c_str());
     first_pos_sent = true;
   }
-}
+}*/
 
 void CrazyflieROS::sendExternalPositionUpdate(float x , float y , float z){
-  if (m_cf.isSITL() && first_pos_sent){
-    m_cf.sendExternalPositionUpdate(x,y,z); // Send with no ack message in SITL
+  m_cf.sendExternalPositionUpdate(x, y, z);
+  if (m_cf.isSITL())
     m_sentExternalPosition = false;
-  }else if (m_cf.isSITL()){
+  else
+    m_sentExternalPosition = true;
+  /*if (first_pos_sent){
+    m_cf.sendExternalPositionUpdate(x, y, z);
+    if (m_cf.isSITL())
+      m_sentExternalPosition = false; // Send with no ack in case of SITL
+    else
+      m_sentExternalPosition = true;
+  }else {
     x_init = x;
     y_init = y;
     z_init = z;
-  }else {
-    m_cf.sendExternalPositionUpdate(x , y , z);
-    m_sentExternalPosition = true;
-  }
+  }*/
 }
 
 /* Initialization process of ROS routines */
@@ -197,13 +202,6 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
 {
   //ros::NodeHandle n;
   //n.setCallbackQueue(&m_callback_queue);
-
-  // solve LIBUSB_ERROR_TIMEOUT by trying to poll params info
-  try {
-    m_cf.requestParamToc();
-  } catch (std::runtime_error& e){
-    ROS_INFO("[%s] Runtime Error catched : %s" , m_tf_prefix.c_str() , e.what());
-  }
 
   ROS_INFO("[%s] Creating CrazyflieROS services " , m_tf_prefix.c_str());
 
@@ -265,7 +263,13 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
   std::function<void(const char*)> cb_console = std::bind(&CrazyflieROS::onConsole, this, std::placeholders::_1);
   m_cf.setConsoleCallback(cb_console);
 
-  m_cf.logReset();
+  try {
+    m_cf.logReset();
+  } catch (std::runtime_error& e){
+    ROS_INFO("Runtime Error logReset catched : %s" , e.what());
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    m_cf.logReset();
+  }
 
   std::function<void(float)> cb_lq = std::bind(&CrazyflieROS::onLinkQuality, this, std::placeholders::_1);
   m_cf.setLinkQualityCallback(cb_lq);
@@ -280,7 +284,13 @@ void CrazyflieROS::initalizeRosRoutines(ros::NodeHandle &n)
   if (m_enableParameters)
   {
     ROS_INFO("[%s] Requesting parameters...", m_tf_prefix.c_str());
-    m_cf.requestParamToc();
+    try {
+      m_cf.requestParamToc();
+    } catch (std::runtime_error& e){
+      ROS_INFO("Runtime Error paramToc catched : %s" , e.what());
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      m_cf.requestParamToc();
+    }
     for (auto iter = m_cf.paramsBegin(); iter != m_cf.paramsEnd(); ++iter) {
       auto entry = *iter;
       std::string paramName = "/" + m_tf_prefix + "/" + entry.group + "/" + entry.name;
@@ -440,19 +450,15 @@ void CrazyflieROS::updateInformation()
       // make sure we ping often enough to stream data out
       m_cf.transmitPackets();
 
-      resetKalmanFilter();
+      // resetKalmanFilter();
 
       if (m_cf.isSITL())
         m_cf.sendPing(0);
       else
         m_cf.sendPing();
-
-      // if(m_enable_logging_packets) {
-      //   this->publishPackets();
-      // }
-      m_sentSetpoint = false;
-      m_sentExternalPosition = false;
-    }
+  }
+  m_sentSetpoint = false;
+  m_sentExternalPosition = false;
 }
 
 /***********************************************************************/
