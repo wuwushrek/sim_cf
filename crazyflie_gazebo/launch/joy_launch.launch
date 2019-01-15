@@ -4,7 +4,7 @@
 
   <arg name="only_command" default="false" />
   <arg name="cfPrefix" default="cf1" />
-  <arg name="positionTopic" default="pos" />
+  <arg name="positionTopic" default="local_position" />
   
   <group ns= "$(arg cfPrefix)">
     <node pkg="joy" name="joy" type="joy_node" output="screen" >

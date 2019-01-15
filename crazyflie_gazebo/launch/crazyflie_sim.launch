@@ -34,7 +34,7 @@
 
   <!-- Some custom blocks for every crazyflie in the environment-->
   <rosparam>
-      genericLogTopics: ["pos","targetPos"]
+      genericLogTopics: ["local_position","target_position"]
       genericLogTopicFrequencies: [10,10]
       genericLogTopic_pos_Variables: ["stateEstimate.x", "stateEstimate.y", "stateEstimate.z"]
       genericLogTopic_targetPos_Variables: ["posCtl.targetX", "posCtl.targetY", "posCtl.targetZ"]

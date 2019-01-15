@@ -11,7 +11,7 @@
   <arg name="allow_collision" default="false" />
   <arg name="color_prop_front" default="White" />
   <arg name="color_prop_back" default="White" />
-  <arg name="poseTopic" default="/cf1/setpoint_pose" />
+  <arg name="poseTopic" default="/cf1/target_position" />
 
 
   <!-- send the robot XML to param server -->
