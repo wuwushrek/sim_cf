@@ -40,7 +40,7 @@
         genericLogTopics: ["local_position","target_position"]
         genericLogTopicFrequencies: [10,10]
         genericLogTopic_local_position_Variables: ["stateEstimate.x", "stateEstimate.y", "stateEstimate.z", "stabilizer.roll", "stabilizer.pitch", "stabilizer.yaw"]
-        genericLogTopic_target_position_Variables: ["posCtl.targetX", "posCtl.targetY", "posCtl.targetZ", "ctrltarget.roll", "ctrltarget.pitch", "ctrltarget.yaw"]
+        genericLogTopic_target_position_Variables: ["posCtl.targetX", "posCtl.targetY", "posCtl.targetZ", "controller.roll", "controller.pitch", "controller.yaw"]
       </rosparam>
     </node>
   </group>

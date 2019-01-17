@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# First kill current running instances
-pkill cf2
-sleep 0.3
-
 if [ -z "$1" ]
 then
 	max_cfs=1
