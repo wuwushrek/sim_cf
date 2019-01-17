@@ -55,6 +55,13 @@
   <arg name="y_4" default="1.0" />
   <arg name="z_4" default="0.03" />
 
+  <!-- Some custom blocks for every crazyflie in the environment-->
+  <rosparam>
+      genericLogTopics: ["local_position","target_position"]
+      genericLogTopicFrequencies: [10,10]
+      genericLogTopic_local_position_Variables: ["stateEstimate.x", "stateEstimate.y", "stateEstimate.z", "stabilizer.roll", "stabilizer.pitch", "stabilizer.yaw"]
+      genericLogTopic_target_position_Variables: ["posCtl.targetX", "posCtl.targetY", "posCtl.targetZ", "ctrltarget.roll", "ctrltarget.pitch", "ctrltarget.yaw"]
+  </rosparam>
 
   <!-- The following line causes gzmsg and gzerr messages to be printed to the console
       (even when Gazebo is started through roslaunch) -->

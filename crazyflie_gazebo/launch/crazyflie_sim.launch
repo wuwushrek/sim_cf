@@ -25,6 +25,7 @@
   <arg name="enable_logging_battery" default="false" />
   <arg name="enable_logging_packets" default="false" />
 
+  <!-- The front propeller are always toward positive x at the beginning -->
   <arg name="tf_prefix_1" default="$(arg cfPrefix)1" />
   <arg name="color_prop_front_1" default="Blue" />
   <arg name="color_prop_back_1" default="Red" />
@@ -36,8 +37,8 @@
   <rosparam>
       genericLogTopics: ["local_position","target_position"]
       genericLogTopicFrequencies: [10,10]
-      genericLogTopic_pos_Variables: ["stateEstimate.x", "stateEstimate.y", "stateEstimate.z"]
-      genericLogTopic_targetPos_Variables: ["posCtl.targetX", "posCtl.targetY", "posCtl.targetZ"]
+      genericLogTopic_local_position_Variables: ["stateEstimate.x", "stateEstimate.y", "stateEstimate.z", "stabilizer.roll", "stabilizer.pitch", "stabilizer.yaw"]
+      genericLogTopic_target_position_Variables: ["posCtl.targetX", "posCtl.targetY", "posCtl.targetZ", "ctrltarget.roll", "ctrltarget.pitch", "ctrltarget.yaw"]
   </rosparam>
 
   <!-- The following line causes gzmsg and gzerr messages to be printed to the console

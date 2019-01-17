@@ -1,6 +1,7 @@
 #include "gazebo_cfGhost_plugin.h"
 
 // #include <tf/transform_datatypes.h>
+#define DEG_2_RAD 3.14159265359/180.0
 
 namespace gazebo {
 
@@ -57,7 +58,10 @@ void GazeboCfGHostPlugin::poseReceivedCallback(const crazyflie_driver::GenericLo
 
 	/*last_pose=ignition::math::Pose3d(position->pose.position.x , position->pose.position.y , position->pose.position.z, 
 		position->pose.orientation.w , position->pose.orientation.x , position->pose.orientation.y , position->pose.orientation.z);*/
-	last_pose=ignition::math::Pose3d(position->values[0] , position->values[1] , position->values[2], 1.0, 0,0,0);
+	if (position->values.size() == 3)
+		last_pose=ignition::math::Pose3d(position->values[0] , position->values[1] , position->values[2], 1.0, 0,0,0);
+	else if (position->values.size() == 6)
+		last_pose=ignition::math::Pose3d(position->values[0] , position->values[1] , position->values[2], position->values[3] * DEG_2_RAD, position->values[4] * DEG_2_RAD, position->values[5]* DEG_2_RAD);
 }
 
 }

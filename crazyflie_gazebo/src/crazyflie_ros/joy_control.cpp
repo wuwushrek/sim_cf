@@ -28,6 +28,8 @@
 #define LAND_TOPIC                                      "land"
 #define UPDATE_PARAMS_TOPIC                             "update_params"
 
+#define DEG_2_RAD 3.14159265359/180.0
+
 #define POS_VEL_CONTROL                 3
 #define ACC_ATT_CONTROL                 5     
 
@@ -36,14 +38,14 @@
 #define PI_                   			180.0		//3.1415926535897
 #define PITCH_MAX               		(PI_/20.0)    		//Max pitch angle allowed
 #define ROLL_MAX                		(PI_/20.0)    		//Max roll angle allowed
-#define YAW_MAX_RATE                    (PI_/200.0)           //in deg per seg
+#define YAW_MAX_RATE                    (PI_/3.0)           //in deg per seg
 
 #define THROTTLE_MAX             		55000           	//Max throttle allowed
 
 #define STEP_Z_RATE                     0.05
 #define STEP_Y_X_RATE                   0.05
 #define STEP_ROLL_PITCH                 (PI_/90.0)          //increase the roll and yaw max value by this at every key pressed
-#define STEP_YAW_RATE                   (PI_/40.0)          //increase max yaw_rate by this
+#define STEP_YAW_RATE                   (PI_/10.0)          //increase max yaw_rate by this
 //Joystick configuration
 
 #define THROTTLE_AXE            		1            		//Up/Down left axis
@@ -129,7 +131,8 @@ crazyflie_driver::Hover vel_control_msg;
 
 //Getting feedback from the fcu
 geometry_msgs::Point current_pose;
-// double mc_given_yaw;
+double mc_given_yaw;
+bool contain_yaw = false;
 
 double current_yaw;
 geometry_msgs::Point current_pos;
@@ -229,6 +232,8 @@ void joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
         is_landing = false;
         is_arm = true;
         reset_control_type = true;
+        if (contain_yaw)
+            current_yaw = mc_given_yaw;
         ROS_WARN("POSITION CONTROL ACTIVATED ! ");
     }
 
@@ -294,6 +299,10 @@ void curr_pos_callback(const crazyflie_driver::GenericLogData::ConstPtr& msg){
     current_pose.x = msg->values[0];
     current_pose.y = msg->values[1];
     current_pose.z = msg->values[2];
+    if (msg->values.size() == 6){
+        contain_yaw = true;
+        mc_given_yaw =  msg->values[5] * DEG_2_RAD;
+    }
     // current_pose = msg->pose;
     // mc_given_yaw = tf::getYaw(msg->pose.orientation);
 }
@@ -463,7 +472,10 @@ int main(int argc, char **argv)
     update_params_client.call(m_params);
 
     //setting initial yaw and initial position
-	current_yaw = 0;
+    if (contain_yaw)
+	   current_yaw = mc_given_yaw;
+    else
+        current_yaw = 0;
 	current_pos = current_pose;
 
 	ROS_WARN("[JOY NODE ]:  initial pos : %f , %f , %f ",current_pos.x , current_pos.y , current_pos.z);
@@ -491,7 +503,9 @@ int main(int argc, char **argv)
             current_pos.x += back_forward * max_speed_x * dt.toSec();
             current_pos.y += left_right * max_speed_y * dt.toSec();
             current_pos.z += up_down * max_speed_z * dt.toSec();
-            // current_yaw += yaw * (yaw_max_rate) * dt.toSec();
+            current_yaw += yaw * (yaw_max_rate) * dt.toSec();
+            pos_control_msg.header.seq += 1;
+            pos_control_msg.header.stamp = ros::Time::now();
             pos_control_msg.yaw = current_yaw;
             pos_control_msg.x = current_pos.x;
             pos_control_msg.y = current_pos.y;
@@ -500,18 +514,21 @@ int main(int argc, char **argv)
         }
         if(!only_command && is_velctl){   //Velocity control state
             current_pos.z += up_down * max_speed_z * dt.toSec();
+            vel_control_msg.header.seq += 1;
+            vel_control_msg.header.stamp = ros::Time::now();
             vel_control_msg.vx = back_forward * max_speed_x;
             vel_control_msg.vy = left_right * max_speed_y;
             vel_control_msg.zDistance = current_pos.z; // up_down * max_speed_z;
-            vel_control_msg.yawrate = yaw * (yaw_max_rate);
+            vel_control_msg.yawrate = - yaw * (yaw_max_rate);
+            current_yaw += yaw * (yaw_max_rate) * dt.toSec();
             vel_control_pub.publish(vel_control_msg);
         }
         if(!only_command && is_attctl){       //Attitude control
             att_control_msg.linear.y = - left_right * roll_max;
             att_control_msg.linear.x = back_forward * pitch_max;
-            // current_yaw += yaw * (yaw_max_rate) * dt.toSec();
+            current_yaw += yaw * (yaw_max_rate) * dt.toSec();
             att_control_msg.linear.z = up_down * throttle_max ;
-            att_control_msg.angular.z = current_yaw;
+            att_control_msg.angular.z = - yaw * (yaw_max_rate);
             att_control_pub.publish(att_control_msg);
         }
 
