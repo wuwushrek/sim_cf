@@ -29,6 +29,8 @@
 #include <stdio.h>
 
 #include <boost/bind.hpp>
+#include <boost/array.hpp>
+
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
@@ -42,6 +44,14 @@
 
 #include "Odometry.pb.h"
 
+#include "_version.h"
+#if GAZEBO_9
+#include <ignition/math/Vector3.hh>
+#include <ignition/math/Pose3.hh>
+#else
+#include <gazebo/Math/Vector3.hh>
+#include <gazebo/Math/Pose.hh>
+#endif
 
 namespace gazebo {
 
@@ -63,6 +73,14 @@ class GazeboOdometryPlugin : public ModelPlugin {
   typedef std::uniform_real_distribution<> UniformDistribution;
   typedef std::deque<std::pair<int, gz_geometry_msgs::Odometry> > OdometryQueue;
   typedef boost::array<double, 36> CovarianceMatrix;
+
+#if GAZEBO_9
+  typedef ignition::math::Vector3d V3;
+  typedef ignition::math::Pose3d P3;
+#else
+  typedef math::Vector3 V3;
+  typedef math::Pose3 P3;
+#endif
 
   GazeboOdometryPlugin()
       : ModelPlugin(),

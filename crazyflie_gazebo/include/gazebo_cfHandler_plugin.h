@@ -15,11 +15,18 @@
 #include <boost/bind.hpp>
 #include <Eigen/Eigen>
 
+#include "_version.h"
+#if GAZEBO_9
+#include <ignition/math/Vector3.hh>
+#else
+#include <gazebo/math/Vector3.hh>
+#endif
+
+
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-#include <gazebo/math/Vector3.hh>
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 

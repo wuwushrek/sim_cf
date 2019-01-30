@@ -15,28 +15,38 @@
  */
 
 // MODULE HEADER INCLUDE
+#include "_version.h"
 #include "gazebo_magnetometer_plugin.h"
 
-#include <mav_msgs/default_topics.h>  // This comes from the mav_comm repo
+#include <mav_msgs/default_topics.h> // This comes from the mav_comm repo
 
 #include "ConnectGazeboToRosTopic.pb.h"
+
+
 
 namespace gazebo {
 
 GazeboMagnetometerPlugin::GazeboMagnetometerPlugin()
-    : ModelPlugin(),
-      mag_delay_(kDefaultMagDelay),
-      random_generator_(random_device_()),
-      pubs_and_subs_created_(false) {
+  : ModelPlugin()
+  , mag_delay_(kDefaultMagDelay)
+  , random_generator_(random_device_())
+  , pubs_and_subs_created_(false)
+{
   // Nothing
 }
 
-GazeboMagnetometerPlugin::~GazeboMagnetometerPlugin() {
+GazeboMagnetometerPlugin::~GazeboMagnetometerPlugin()
+{
+#if GAZEBO_9
+
+#else
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
+#endif
 }
 
-void GazeboMagnetometerPlugin::Load(physics::ModelPtr _model,
-                                    sdf::ElementPtr _sdf) {
+void
+GazeboMagnetometerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+{
   if (kPrintOnPluginLoad) {
     gzdbg << __FUNCTION__ << "() called." << std::endl;
   }
@@ -53,8 +63,8 @@ void GazeboMagnetometerPlugin::Load(physics::ModelPtr _model,
 
   // get the magnetometer rate if there is anyone given
   int mag_rate = -1;
-  getSdfParam<int>(_sdf,"rate",mag_rate , mag_rate);
-  if (mag_rate > 0){
+  getSdfParam<int>(_sdf, "rate", mag_rate, mag_rate);
+  if (mag_rate > 0) {
     mag_delay_ = 1.0 / mag_rate;
   }
 
@@ -85,23 +95,29 @@ void GazeboMagnetometerPlugin::Load(physics::ModelPtr _model,
   const SdfVector3 zeros3(0.0, 0.0, 0.0);
 
   // Retrieve the rest of the SDF parameters
-  getSdfParam<std::string>(_sdf, "magnetometerTopic", magnetometer_topic_,
+  getSdfParam<std::string>(_sdf,
+                           "magnetometerTopic",
+                           magnetometer_topic_,
                            mav_msgs::default_topics::MAGNETIC_FIELD);
 
   getSdfParam<double>(_sdf, "refMagNorth", ref_mag_north, kDefaultRefMagNorth);
   getSdfParam<double>(_sdf, "refMagEast", ref_mag_east, kDefaultRefMagEast);
   getSdfParam<double>(_sdf, "refMagDown", ref_mag_down, kDefaultRefMagDown);
   getSdfParam<SdfVector3>(_sdf, "noiseNormal", noise_normal, zeros3);
-  getSdfParam<SdfVector3>(_sdf, "noiseUniformInitialBias",
-                          noise_uniform_initial_bias, zeros3);
+  getSdfParam<SdfVector3>(
+    _sdf, "noiseUniformInitialBias", noise_uniform_initial_bias, zeros3);
 
   // Listen to the update event. This event is broadcast every simulation
   // iteration.
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(
-      boost::bind(&GazeboMagnetometerPlugin::OnUpdate, this, _1));
+    boost::bind(&GazeboMagnetometerPlugin::OnUpdate, this, _1));
 
   // Update last time of simulation
+  #if GAZEBO_9
+  last_time_ = world_->SimTime();
+#else
   last_time_ = world_->GetSimTime();
+#endif
 
   // Create the normal noise distributions
   noise_n_[0] = NormalDistribution(0, noise_normal.X());
@@ -119,7 +135,7 @@ void GazeboMagnetometerPlugin::Load(physics::ModelPtr _model,
 
   // Initialize the reference magnetic field vector in world frame, taking into
   // account the initial bias
-  mag_W_ = math::Vector3(ref_mag_north + initial_bias[0](random_generator_),
+  mag_W_ = V3(ref_mag_north + initial_bias[0](random_generator_),
                          ref_mag_east + initial_bias[1](random_generator_),
                          ref_mag_down + initial_bias[2](random_generator_));
 
@@ -154,7 +170,10 @@ void GazeboMagnetometerPlugin::Load(physics::ModelPtr _model,
   }
 }
 
-void GazeboMagnetometerPlugin::OnUpdate(const common::UpdateInfo& _info) {
+void
+GazeboMagnetometerPlugin::OnUpdate(const common::UpdateInfo& _info)
+{
+
   if (kPrintOnUpdates) {
     gzdbg << __FUNCTION__ << "() called." << std::endl;
   }
@@ -164,38 +183,64 @@ void GazeboMagnetometerPlugin::OnUpdate(const common::UpdateInfo& _info) {
     pubs_and_subs_created_ = true;
   }
 
-  // Get current time from gazebo.
-  common::Time current_time = world_->GetSimTime();
+// Get current time from gazebo.
+common::Time current_time;
+#if GAZEBO_9
+  current_time = world_->SimTime();
+#else
+  current_time = world_->GetSimTime();
+#endif
+
   double dt = (current_time - last_time_).Double();
 
   if (dt < mag_delay_)
-    return ;
+    return;
 
   // Get the current pose from Gazebo
-  math::Pose T_W_B = link_->GetWorldPose();
+  #if GAZEBO_9
+  P3 T_W_B = link_->WorldPose();
+#else
+  math::Pose3 T_W_B = link_->GetWorldPose();
+#endif
 
   // Calculate the magnetic field noise.
-  math::Vector3 mag_noise(noise_n_[0](random_generator_),
-                          noise_n_[1](random_generator_),
-                          noise_n_[2](random_generator_));
+  V3 mag_noise(noise_n_[0](random_generator_),
+                           noise_n_[1](random_generator_),
+                           noise_n_[2](random_generator_));
+
 
   // Rotate the earth magnetic field into the inertial frame
-  math::Vector3 field_B = T_W_B.rot.RotateVectorReverse(mag_W_ + mag_noise);
+  V3 field_B;
+  #if GAZEBO_9
+  field_B = T_W_B.Rot().RotateVectorReverse(mag_W_ + mag_noise);
+#else
+  field_B = T_W_B.rot.RotateVectorReverse(mag_W_ + mag_noise);
+#endif
 
   // Fill the magnetic field message
   mag_message_.mutable_header()->mutable_stamp()->set_sec(current_time.sec);
   mag_message_.mutable_header()->mutable_stamp()->set_nsec(current_time.nsec);
+
+  #if GAZEBO_9
+  mag_message_.mutable_magnetic_field()->set_x(field_B.X());
+  mag_message_.mutable_magnetic_field()->set_y(field_B.Y());
+  mag_message_.mutable_magnetic_field()->set_z(field_B.Z());
+#else
   mag_message_.mutable_magnetic_field()->set_x(field_B.x);
   mag_message_.mutable_magnetic_field()->set_y(field_B.y);
   mag_message_.mutable_magnetic_field()->set_z(field_B.z);
+#endif
 
   // Publish the message
   magnetometer_pub_->Publish(mag_message_);
   last_time_ = current_time;
-  // gzdbg << "mag x = " << field_B.x << " ; dt,delay = " << dt << " , "<< mag_delay_<<std::endl;
+  // gzdbg << "mag x = " << field_B.x << " ; dt,delay = " << dt << " , "<<
+  // mag_delay_<<std::endl;
 }
 
-void GazeboMagnetometerPlugin::CreatePubsAndSubs() {
+void
+GazeboMagnetometerPlugin::CreatePubsAndSubs()
+{
   // Create temporary "ConnectGazeboToRosTopic" publisher and message
   // gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
   //     node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>(
@@ -204,12 +249,14 @@ void GazeboMagnetometerPlugin::CreatePubsAndSubs() {
   // ============================================ //
   // ========= MAGNETIC FIELD MSG SETUP ========= //
   // ============================================ //
-  gzdbg << "~/" + model_->GetName() + "/" + magnetometer_topic_<< std::endl;
-  magnetometer_pub_ = node_handle_->Advertise<gz_sensor_msgs::MagneticField>( model_->GetName() + "/" + magnetometer_topic_, 1);
+  gzdbg << "~/" + model_->GetName() + "/" + magnetometer_topic_ << std::endl;
+  magnetometer_pub_ = node_handle_->Advertise<gz_sensor_msgs::MagneticField>(
+    model_->GetName() + "/" + magnetometer_topic_, 1);
 
   // gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
   // // connect_gazebo_to_ros_topic_msg.set_gazebo_namespace(namespace_);
-  // connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName() + "/" +
+  // connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName() +
+  // "/" +
   //                                                  magnetometer_topic_);
   // connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
   //                                               magnetometer_topic_);
@@ -221,4 +268,4 @@ void GazeboMagnetometerPlugin::CreatePubsAndSubs() {
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboMagnetometerPlugin);
 
-}  // namespace gazebo
+} // namespace gazebo

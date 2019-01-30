@@ -19,8 +19,8 @@
 
 #include <random>
 
-#include <gazebo/common/common.hh>
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/common/common.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -38,31 +38,44 @@ static constexpr double kDefaultRefMagNorth = 0.000021493;
 static constexpr double kDefaultRefMagEast = 0.000000815;
 static constexpr double kDefaultRefMagDown = 0.000042795;
 
-static constexpr double kDefaultMagDelay = 0; //Why not
+static constexpr double kDefaultMagDelay = 0; // Why not
 
-class GazeboMagnetometerPlugin : public ModelPlugin {
+class GazeboMagnetometerPlugin : public ModelPlugin
+{
 
- public:
+public:
+#if GAZEBO_9
+  typedef ignition::math::Vector3d V3;
+  typedef ignition::math::Pose3d P3;
+#else
+  typedef math::Vector3 V3;
+  typedef math::Pose3 P3;
+#endif
   typedef std::normal_distribution<> NormalDistribution;
   typedef std::uniform_real_distribution<> UniformDistribution;
 
   GazeboMagnetometerPlugin();
   virtual ~GazeboMagnetometerPlugin();
 
- protected:
+protected:
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo&);
 
- private:
-
-  /// \brief    Flag that is set to true once CreatePubsAndSubs() is called, used
-  ///           to prevent CreatePubsAndSubs() from be called on every OnUpdate().
+private:
+  /// \brief    Flag that is set to true once CreatePubsAndSubs() is called,
+  ///           used
+  ///           to prevent CreatePubsAndSubs() from be called on every
+  ///           OnUpdate().
   bool pubs_and_subs_created_;
 
-  /// \brief    Creates all required publishers and subscribers, incl. routing of messages to/from ROS if required.
-  /// \details  Call this once the first time OnUpdate() is called (can't
-  ///           be called from Load() because there is no guarantee GazeboRosInterfacePlugin has
-  ///           has loaded and listening to ConnectGazeboToRosTopic and ConnectRosToGazeboTopic messages).
+  /// \brief    Creates all required publishers and subscribers, incl. routing
+  ///           of messages to/from ROS if required. 
+  ///
+  /// \details  Call this once the first
+  ///           time OnUpdate() is called (can't
+  ///           be called from Load() because there is no guarantee
+  ///           GazeboRosInterfacePlugin has has loaded and listening to
+  ///           ConnectGazeboToRosTopic and ConnectRosToGazeboTopic messages).
   void CreatePubsAndSubs();
 
   std::string namespace_;
@@ -83,7 +96,7 @@ class GazeboMagnetometerPlugin : public ModelPlugin {
   //// \brief    Pointer to the update event connection.
   event::ConnectionPtr updateConnection_;
 
-  math::Vector3 mag_W_;
+  V3 mag_W_;
 
   /// \brief    magnetometer measurement rate
   double mag_delay_;
