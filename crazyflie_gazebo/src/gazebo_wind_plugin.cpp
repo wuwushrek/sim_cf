@@ -73,11 +73,6 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   if (_sdf->HasElement("xyzOffset"))
   {
     xyz_offset_ = _sdf->GetElement("xyzOffset")->Get<V3>();
-//   #if GAZEBO_9
-//     xyz_offset_ = _sdf->GetElement("xyzOffset")->Get<ignition::math::Vector3d>();
-// #else
-//     xyz_offset_ = _sdf->GetElement("xyzOffset")->Get<math::Vector3>();
-// #endif
   }
   else
   {
@@ -98,15 +93,7 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
                       wind_speed_variance_);
   getSdfParam<V3>(_sdf, "windDirection", wind_direction_,
                       wind_direction_);
-//                       #if GAZEBO_9
 
-//   getSdfParam<ignition::math::Vector3d>(_sdf, "windDirection", wind_direction_,
-//                       wind_direction_);
-// #else
-//   getSdfParam<math::Vector3>(_sdf, "windDirection", wind_direction_,
-//                       wind_direction_);
-
-// #endif
   // Check if a custom static wind field should be used.
   getSdfParam<bool>(_sdf, "useCustomStaticWindField", use_custom_static_wind_field_,
                       use_custom_static_wind_field_);
@@ -127,13 +114,6 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
                         wind_gust_force_variance_);
     getSdfParam<V3>(_sdf, "windGustDirection", wind_gust_direction_,
                         wind_gust_direction_);
-//                         #if GAZEBO_9
-//     getSdfParam<ignition::math::Vector3d>(_sdf, "windGustDirection", wind_gust_direction_,
-//                         wind_gust_direction_);
-// #else
-//     getSdfParam<math::Vector3>(_sdf, "windGustDirection", wind_gust_direction_,
-//                         wind_gust_direction_);
-// #endif
 
     wind_direction_.Normalize();
     wind_gust_direction_.Normalize();
@@ -177,31 +157,17 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   common::Time now = world_->GetSimTime();
 #endif
   
-//   #if GAZEBO_9
-//   ignition::math::Vector3d wind_velocity(0.0, 0.0, 0.0);
-// #else
-//   math::Vector3 wind_velocity(0.0, 0.0, 0.0);
-// #endif
   V3 wind_velocity(0.0, 0.0, 0.0);
 
   // Choose user-specified method for calculating wind velocity.
   if (!use_custom_static_wind_field_) {
     // Calculate the wind force.
     double wind_strength = wind_force_mean_;
-//     #if GAZEBO_9
-//     ignition::math::Vector3d wind = wind_strength * wind_direction_;
-// #else
-//     math::Vector3 wind = wind_strength * wind_direction_;
-// #endif
+
     V3 wind = wind_strength * wind_direction_;
     // Apply a force from the constant wind to the link.
     link_->AddForceAtRelativePosition(wind, xyz_offset_);
 
-// #if GAZEBO_9
-//     ignition::math::Vector3d wind_gust(0.0, 0.0, 0.0);
-// #else
-//     math::Vector3 wind_gust(0.0, 0.0, 0.0);
-// #endif
     V3 wind_gust(0.0, 0.0, 0.0);
     // Calculate the wind gust force.
     if (now >= wind_gust_start_ && now < wind_gust_end_) {
@@ -245,7 +211,7 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
     #if GAZEBO_9
     V3 link_position = link_->WorldPose().Pos();
 #else
-    math::Vector3 link_position = link_->GetWorldPose().pos;
+    V3 link_position = link_->GetWorldPose().pos;
 #endif
 
     // Calculate the x, y index of the grid points with x, y-coordinate 
@@ -332,11 +298,6 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
       // Extract the wind velocities corresponding to each vertex.
       V3 wind_at_vertices[n_vertices];
-//       #if GAZEBO_9
-//       ignition::math::Vector3d wind_at_vertices[n_vertices];
-// #else
-//       math::Vector3 wind_at_vertices[n_vertices];
-// #endif
       for (std::size_t i = 0u; i < n_vertices; ++i) {
         #if GAZEBO_9
         double& wav_x = wind_at_vertices[i].X();

@@ -276,13 +276,13 @@ GazeboOdometryPlugin::OnUpdate(const common::UpdateInfo& _info)
   V3 gazebo_angular_velocity = C_angular_velocity_W_C;
   P3 gazebo_pose = W_pose_W_C;
 #else
-  math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-  math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
-  math::Vector3 C_angular_velocity_W_C = link_->GetRelativeAngularVel();
+  P3 W_pose_W_C = link_->GetWorldCoGPose();
+  V3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
+  V3 C_angular_velocity_W_C = link_->GetRelativeAngularVel();
 
-  math::Vector3 gazebo_linear_velocity = C_linear_velocity_W_C;
-  math::Vector3 gazebo_angular_velocity = C_angular_velocity_W_C;
-  math::Pose gazebo_pose = W_pose_W_C;
+  V3 gazebo_linear_velocity = C_linear_velocity_W_C;
+  V3 gazebo_angular_velocity = C_angular_velocity_W_C;
+  P3 gazebo_pose = W_pose_W_C;
 #endif
 
   if (parent_frame_id_ != kDefaultParentFrameId) {
@@ -293,12 +293,12 @@ GazeboOdometryPlugin::OnUpdate(const common::UpdateInfo& _info)
     P3 C_pose_P_C_ = W_pose_W_C - W_pose_W_P;
     V3 C_linear_velocity_P_C;
 #else
-    math::Pose W_pose_W_P = parent_link_->GetWorldPose();
-    math::Vector3 P_linear_velocity_W_P = parent_link_->GetRelativeLinearVel();
-    math::Vector3 P_angular_velocity_W_P =
+    P3 W_pose_W_P = parent_link_->GetWorldPose();
+    V3 P_linear_velocity_W_P = parent_link_->GetRelativeLinearVel();
+    V3 P_angular_velocity_W_P =
       parent_link_->GetRelativeAngularVel();
-    math::Pose C_pose_P_C_ = W_pose_W_C - W_pose_W_P;
-    math::Vector3 C_linear_velocity_P_C;
+    P3 C_pose_P_C_ = W_pose_W_C - W_pose_W_P;
+    V3 C_linear_velocity_P_C;
 #endif
 // \prescript{}{C}{\dot{r}}_{PC} = -R_{CP}
 //       \cdot \prescript{}{P}{\omega}_{WP} \cross \prescript{}{P}{r}_{PC}
