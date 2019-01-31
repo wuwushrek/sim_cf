@@ -17,7 +17,7 @@
 #if GAZEBO_9
 #include <ignition/math/Vector3.hh>
 #else
-#include <gazebo/math/Vector3.hh>
+#include <gazebo/math/gzmath.hh>
 #endif
 
 #include <gazebo/msgs/msgs.hh>
@@ -56,7 +56,7 @@ private:
 #if GAZEBO_9
   typedef ignition::math::Pose3d P3;
 #else
-  typedef gazebo::math::Pose3 P3
+  typedef gazebo::math::Pose P3;
 #endif
 
   std::string m_pose_topic;

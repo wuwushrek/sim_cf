@@ -49,8 +49,7 @@
 #include <ignition/math/Vector3.hh>
 #include <ignition/math/Pose3.hh>
 #else
-#include <gazebo/Math/Vector3.hh>
-#include <gazebo/Math/Pose.hh>
+#include <gazebo/math/gzmath.hh>
 #endif
 
 namespace gazebo {
@@ -79,7 +78,7 @@ class GazeboOdometryPlugin : public ModelPlugin {
   typedef ignition::math::Pose3d P3;
 #else
   typedef math::Vector3 V3;
-  typedef math::Pose3 P3;
+  typedef math::Pose P3;
 #endif
 
   GazeboOdometryPlugin()

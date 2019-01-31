@@ -35,7 +35,7 @@
 #if GAZEBO_9
 #include <ignition/math/Vector3.hh>
 #else
-#include <gazebo/Math/Vector3.hh>
+#include <gazebo/math/gzmath.hh>
 #endif
 
 #include "common.h"

@@ -49,7 +49,7 @@ public:
   typedef ignition::math::Pose3d P3;
 #else
   typedef math::Vector3 V3;
-  typedef math::Pose3 P3;
+  typedef math::Pose P3;
 #endif
   typedef std::normal_distribution<> NormalDistribution;
   typedef std::uniform_real_distribution<> UniformDistribution;

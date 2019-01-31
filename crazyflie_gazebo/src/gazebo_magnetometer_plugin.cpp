@@ -200,7 +200,7 @@ common::Time current_time;
   #if GAZEBO_9
   P3 T_W_B = link_->WorldPose();
 #else
-  math::Pose3 T_W_B = link_->GetWorldPose();
+  math::Pose T_W_B = link_->GetWorldPose();
 #endif
 
   // Calculate the magnetic field noise.
