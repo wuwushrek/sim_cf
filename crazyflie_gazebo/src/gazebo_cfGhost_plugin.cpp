@@ -48,21 +48,23 @@ GazeboCfGHostPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   model_->SetGravityMode(0);
 
 #if GAZEBO_9
-  last_pose = P3(model_->WorldPose().Pos().X(),
-                 model_->WorldPose().Pos().Y(),
-                 model_->WorldPose().Pos().Z(),
-                 model_->WorldPose().Rot().W(),
-                 model_->WorldPose().Rot().X(),
-                 model_->WorldPose().Rot().Y(),
-                 model_->WorldPose().Rot().Z());
+  // last_pose = P3(model_->WorldPose().Pos().X(),
+  //                model_->WorldPose().Pos().Y(),
+  //                model_->WorldPose().Pos().Z(),
+  //                model_->WorldPose().Rot().W(),
+  //                model_->WorldPose().Rot().X(),
+  //                model_->WorldPose().Rot().Y(),
+  //                model_->WorldPose().Rot().Z());
+  last_pose = P3(model_->WorldPose());
 #else
-  last_pose = P3(model_->GetWorldPose().pos.x,
-                 model_->GetWorldPose().pos.y,
-                 model_->GetWorldPose().pos.z,
-                 model_->GetWorldPose().rot.w,
-                 model_->GetWorldPose().rot.x,
-                 model_->GetWorldPose().rot.y,
-                 model_->GetWorldPose().rot.z);
+  // last_pose = P3(model_->GetWorldPose().pos.x,
+  //                model_->GetWorldPose().pos.y,
+  //                model_->GetWorldPose().pos.z,
+  //                model_->GetWorldPose().rot.w,
+  //                model_->GetWorldPose().rot.x,
+  //                model_->GetWorldPose().rot.y,
+  //                model_->GetWorldPose().rot.z);
+  last_pose = P3(model_->GetWorldPose());
 #endif
 }
 
@@ -92,7 +94,6 @@ GazeboCfGHostPlugin::poseReceivedCallback(
     last_pose = P3(position->values[0],
                    position->values[1],
                    position->values[2],
-                   1.0,
                    0,
                    0,
                    0);

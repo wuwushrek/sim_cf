@@ -67,9 +67,9 @@ static const ignition::math::Vector3d kDefaultWindDirection =
 static const ignition::math::Vector3d kDefaultWindGustDirection =
   ignition::math::Vector3d(0, 1, 0);
 #else
-static const migr_math::Vector3 kDefaultWindDirection =
+static const math::Vector3 kDefaultWindDirection =
   migr_math::Vector3(1, 0, 0);
-static const migr_math::Vector3 kDefaultWindGustDirection =
+static const math::Vector3 kDefaultWindGustDirection =
   migr_math::Vector3(0, 1, 0);
 #endif
 
