@@ -18,18 +18,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include "_version.h"
+#if GAZEBO_9
+#include <ignition/math/Vector3.hh>
+#else
+#include <gazebo/math/gzmath.hh>
+#endif
 #include "gazebo_wind_plugin.h"
 
 #include <fstream>
 #include <math.h>
+    
 
 #include "ConnectGazeboToRosTopic.pb.h"
 
 namespace gazebo {
 
+
 GazeboWindPlugin::~GazeboWindPlugin() {
+    #if GAZEBO_9
+    #else
   event::Events::DisconnectWorldUpdateBegin(update_connection_);
+    #endif
+    
 }
 
 void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
@@ -60,9 +71,14 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   node_handle_->Init();
 
   if (_sdf->HasElement("xyzOffset"))
-    xyz_offset_ = _sdf->GetElement("xyzOffset")->Get<math::Vector3>();
+  {
+    xyz_offset_ = _sdf->GetElement("xyzOffset")->Get<V3>();
+  }
   else
+  {
     gzerr << "[gazebo_wind_plugin] Please specify a xyzOffset.\n";
+
+  }
 
   getSdfParam<std::string>(_sdf, "windForcePubTopic", wind_force_pub_topic_,
                            wind_force_pub_topic_);
@@ -75,8 +91,9 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
                       wind_speed_mean_);
   getSdfParam<double>(_sdf, "windSpeedVariance", wind_speed_variance_,
                       wind_speed_variance_);
-  getSdfParam<math::Vector3>(_sdf, "windDirection", wind_direction_,
+  getSdfParam<V3>(_sdf, "windDirection", wind_direction_,
                       wind_direction_);
+
   // Check if a custom static wind field should be used.
   getSdfParam<bool>(_sdf, "useCustomStaticWindField", use_custom_static_wind_field_,
                       use_custom_static_wind_field_);
@@ -95,7 +112,7 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
                         wind_gust_force_mean_);
     getSdfParam<double>(_sdf, "windGustForceVariance", wind_gust_force_variance_,
                         wind_gust_force_variance_);
-    getSdfParam<math::Vector3>(_sdf, "windGustDirection", wind_gust_direction_,
+    getSdfParam<V3>(_sdf, "windGustDirection", wind_gust_direction_,
                         wind_gust_direction_);
 
     wind_direction_.Normalize();
@@ -134,19 +151,24 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   }
 
   // Get the current simulation time.
+  #if GAZEBO_9
+  common::Time now = world_->SimTime();
+#else
   common::Time now = world_->GetSimTime();
+#endif
   
-  math::Vector3 wind_velocity(0.0, 0.0, 0.0);
+  V3 wind_velocity(0.0, 0.0, 0.0);
 
   // Choose user-specified method for calculating wind velocity.
   if (!use_custom_static_wind_field_) {
     // Calculate the wind force.
     double wind_strength = wind_force_mean_;
-    math::Vector3 wind = wind_strength * wind_direction_;
+
+    V3 wind = wind_strength * wind_direction_;
     // Apply a force from the constant wind to the link.
     link_->AddForceAtRelativePosition(wind, xyz_offset_);
 
-    math::Vector3 wind_gust(0.0, 0.0, 0.0);
+    V3 wind_gust(0.0, 0.0, 0.0);
     // Calculate the wind gust force.
     if (now >= wind_gust_start_ && now < wind_gust_end_) {
       double wind_gust_strength = wind_gust_force_mean_;
@@ -159,12 +181,21 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
     wrench_stamped_msg_.mutable_header()->mutable_stamp()->set_sec(now.sec);
     wrench_stamped_msg_.mutable_header()->mutable_stamp()->set_nsec(now.nsec);
 
+#if GAZEBO_9
+    wrench_stamped_msg_.mutable_wrench()->mutable_force()->set_x(wind.X() +
+                                                                 wind_gust.X());
+    wrench_stamped_msg_.mutable_wrench()->mutable_force()->set_y(wind.Y() +
+                                                                 wind_gust.Y());
+    wrench_stamped_msg_.mutable_wrench()->mutable_force()->set_z(wind.Z() +
+                                                                 wind_gust.Z());
+#else
     wrench_stamped_msg_.mutable_wrench()->mutable_force()->set_x(wind.x +
                                                                  wind_gust.x);
     wrench_stamped_msg_.mutable_wrench()->mutable_force()->set_y(wind.y +
                                                                  wind_gust.y);
     wrench_stamped_msg_.mutable_wrench()->mutable_force()->set_z(wind.z +
                                                                  wind_gust.z);
+#endif
 
     // No torque due to wind, set x,y and z to 0.
     wrench_stamped_msg_.mutable_wrench()->mutable_torque()->set_x(0);
@@ -177,12 +208,21 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
     wind_velocity = wind_speed_mean_ * wind_direction_;
   } else {
     // Get the current position of the aircraft in world coordinates.
-    math::Vector3 link_position = link_->GetWorldPose().pos;
+    #if GAZEBO_9
+    V3 link_position = link_->WorldPose().Pos();
+#else
+    V3 link_position = link_->GetWorldPose().pos;
+#endif
 
     // Calculate the x, y index of the grid points with x, y-coordinate 
     // just smaller than or equal to aircraft x, y position.
+    #if GAZEBO_9
+    std::size_t x_inf = floor((link_position.X() - min_x_) / res_x_);
+    std::size_t y_inf = floor((link_position.Y() - min_y_) / res_y_);
+#else
     std::size_t x_inf = floor((link_position.x - min_x_) / res_x_);
     std::size_t y_inf = floor((link_position.y - min_y_) / res_y_);
+#endif
 
     // In case aircraft is on one of the boundary surfaces at max_x or max_y,
     // decrease x_inf, y_inf by one to have x_sup, y_sup on max_x, max_y.
@@ -209,8 +249,13 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
     constexpr unsigned int n_columns = 4;
     float vertical_factors_columns[n_columns];
     for (std::size_t i = 0u; i < n_columns; ++i) {
+      #if GAZEBO_9
+      double link_pos_z = link_position.Z();
+#else
+      double link_pos_z = link_position.z;
+#endif
       vertical_factors_columns[i] = (
-        link_position.z - bottom_z_[idx_x[2u * i] + idx_y[2u * i] * n_x_]) /
+        link_pos_z - bottom_z_[idx_x[2u * i] + idx_y[2u * i] * n_x_]) /
         (top_z_[idx_x[2u * i] + idx_y[2u * i] * n_x_] - bottom_z_[idx_x[2u * i] + idx_y[2u * i] * n_x_]);
     }
     
@@ -252,11 +297,20 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
       }
 
       // Extract the wind velocities corresponding to each vertex.
-      math::Vector3 wind_at_vertices[n_vertices];
+      V3 wind_at_vertices[n_vertices];
       for (std::size_t i = 0u; i < n_vertices; ++i) {
-        wind_at_vertices[i].x = u_[idx_x[i] + idx_y[i] * n_x_ + idx_z[i] * n_x_ * n_y_];
-        wind_at_vertices[i].y = v_[idx_x[i] + idx_y[i] * n_x_ + idx_z[i] * n_x_ * n_y_];
-        wind_at_vertices[i].z = w_[idx_x[i] + idx_y[i] * n_x_ + idx_z[i] * n_x_ * n_y_];
+        #if GAZEBO_9
+        double& wav_x = wind_at_vertices[i].X();
+        double& wav_y = wind_at_vertices[i].Y();
+        double& wav_z = wind_at_vertices[i].Z();
+#else
+        double& wav_x = wind_at_vertices[i].x;
+        double& wav_y = wind_at_vertices[i].y;
+        double& wav_z = wind_at_vertices[i].z;
+#endif
+        wav_x = u_[idx_x[i] + idx_y[i] * n_x_ + idx_z[i] * n_x_ * n_y_];
+        wav_y = v_[idx_x[i] + idx_y[i] * n_x_ + idx_z[i] * n_x_ * n_y_];
+        wav_z = w_[idx_x[i] + idx_y[i] * n_x_ + idx_z[i] * n_x_ * n_y_];
       }
 
       // Extract the relevant coordinate of every point needed for trilinear 
@@ -290,9 +344,15 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   wind_speed_msg_.mutable_header()->mutable_stamp()->set_sec(now.sec);
   wind_speed_msg_.mutable_header()->mutable_stamp()->set_nsec(now.nsec);
 
+#if GAZEBO_9
+  wind_speed_msg_.mutable_velocity()->set_x(wind_velocity.X());
+  wind_speed_msg_.mutable_velocity()->set_y(wind_velocity.Y());
+  wind_speed_msg_.mutable_velocity()->set_z(wind_velocity.Z());
+#else
   wind_speed_msg_.mutable_velocity()->set_x(wind_velocity.x);
   wind_speed_msg_.mutable_velocity()->set_y(wind_velocity.y);
   wind_speed_msg_.mutable_velocity()->set_z(wind_velocity.z);
+#endif
 
   wind_speed_pub_->Publish(wind_speed_msg_);
 }
@@ -406,28 +466,32 @@ void GazeboWindPlugin::ReadCustomWindField(std::string& custom_wind_field_path) 
 
 }
 
-math::Vector3 GazeboWindPlugin::LinearInterpolation(
-  double position, math::Vector3* values, double* points) const {
-  math::Vector3 value = values[0] + (values[1] - values[0]) /
+GazeboWindPlugin::V3 GazeboWindPlugin::LinearInterpolation(
+  double position, V3* values, double* points) const {
+  V3 value = values[0] + (values[1] - values[0]) /
                         (points[1] - points[0]) * (position - points[0]);
   return value;
 }
 
-math::Vector3 GazeboWindPlugin::BilinearInterpolation(
-  double* position, math::Vector3* values, double* points) const {
-  math::Vector3 intermediate_values[2] = { LinearInterpolation(
+GazeboWindPlugin::V3 GazeboWindPlugin::BilinearInterpolation(
+  double* position, V3* values, double* points) const {
+  V3 intermediate_values[2] = { LinearInterpolation(
                                              position[0], &(values[0]), &(points[0])),
                                            LinearInterpolation(
                                              position[0], &(values[2]), &(points[2])) };
-  math::Vector3 value = LinearInterpolation(
+  V3 value = LinearInterpolation(
                           position[1], intermediate_values, &(points[4]));
   return value;
 }
 
-math::Vector3 GazeboWindPlugin::TrilinearInterpolation(
-  math::Vector3 link_position, math::Vector3* values, double* points) const {
+GazeboWindPlugin::V3 GazeboWindPlugin::TrilinearInterpolation(
+  V3 link_position, V3* values, double* points) const {
+    #if GAZEBO_9
+  double position[3] = {link_position.X(),link_position.Y(),link_position.Z()};
+#else
   double position[3] = {link_position.x,link_position.y,link_position.z};
-  math::Vector3 intermediate_values[4] = { LinearInterpolation(
+#endif
+  V3 intermediate_values[4] = { LinearInterpolation(
                                              position[2], &(values[0]), &(points[0])),
                                            LinearInterpolation(
                                              position[2], &(values[2]), &(points[2])),
@@ -435,7 +499,7 @@ math::Vector3 GazeboWindPlugin::TrilinearInterpolation(
                                              position[2], &(values[4]), &(points[4])),
                                            LinearInterpolation(
                                              position[2], &(values[6]), &(points[6])) };
-  math::Vector3 value = BilinearInterpolation(
+  V3 value = BilinearInterpolation(
     &(position[0]), intermediate_values, &(points[8]));
   return value;
 }

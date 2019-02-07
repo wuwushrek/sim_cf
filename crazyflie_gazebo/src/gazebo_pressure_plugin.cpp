@@ -17,23 +17,31 @@
 // MODULE HEADER
 #include "gazebo_pressure_plugin.h"
 
+#include "_version.h"
+
 // USER HEADERS
 #include "ConnectGazeboToRosTopic.pb.h"
 
 namespace gazebo {
 
 GazeboPressurePlugin::GazeboPressurePlugin()
-    : ModelPlugin(),
-      pressure_delay_(kDefaultPressureDelay),
-      node_handle_(0),
-      pubs_and_subs_created_(false) {
-}
+  : ModelPlugin()
+  , pressure_delay_(kDefaultPressureDelay)
+  , node_handle_(0)
+  , pubs_and_subs_created_(false)
+{}
 
-GazeboPressurePlugin::~GazeboPressurePlugin() {
+GazeboPressurePlugin::~GazeboPressurePlugin()
+{
+#if GAZEBO_9
+#else
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
+#endif
 }
 
-void GazeboPressurePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void
+GazeboPressurePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+{
   if (kPrintOnPluginLoad) {
     gzdbg << __FUNCTION__ << "() called." << std::endl;
   }
@@ -68,20 +76,23 @@ void GazeboPressurePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
   // Get the pointer to the link.
   link_ = model_->GetLink(link_name);
   if (link_ == NULL)
-    gzthrow("[gazebo_pressure_plugin] Couldn't find specified link \"" << link_name << "\".");
+    gzthrow("[gazebo_pressure_plugin] Couldn't find specified link \""
+            << link_name << "\".");
 
   frame_id_ = link_name;
 
   // Retrieve the rest of the SDF parameters.
-  getSdfParam<std::string>(_sdf, "pressureTopic", pressure_topic_, kDefaultPressurePubTopic);
+  getSdfParam<std::string>(
+    _sdf, "pressureTopic", pressure_topic_, kDefaultPressurePubTopic);
   getSdfParam<double>(_sdf, "referenceAltitude", ref_alt_, kDefaultRefAlt);
-  getSdfParam<double>(_sdf, "pressureVariance", pressure_var_, kDefaultPressureVar);
+  getSdfParam<double>(
+    _sdf, "pressureVariance", pressure_var_, kDefaultPressureVar);
   CHECK(pressure_var_ >= 0.0);
 
   // Retrieve pressure rate
   int pressure_rate = -1;
-  getSdfParam<int>(_sdf,"rate",pressure_rate , pressure_rate);
-  if (pressure_rate > 0){
+  getSdfParam<int>(_sdf, "rate", pressure_rate, pressure_rate);
+  if (pressure_rate > 0) {
     pressure_delay_ = 1.0 / pressure_rate;
   }
 
@@ -92,7 +103,7 @@ void GazeboPressurePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
   // Listen to the update event. This event is broadcast every simulation
   // iteration.
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(
-      boost::bind(&GazeboPressurePlugin::OnUpdate, this, _1));
+    boost::bind(&GazeboPressurePlugin::OnUpdate, this, _1));
 
   //==============================================//
   //=== POPULATE STATIC PARTS OF PRESSURE MSG ====//
@@ -102,7 +113,9 @@ void GazeboPressurePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
   pressure_message_.set_variance(pressure_var_);
 }
 
-void GazeboPressurePlugin::OnUpdate(const common::UpdateInfo& _info) {
+void
+GazeboPressurePlugin::OnUpdate(const common::UpdateInfo& _info)
+{
   if (kPrintOnUpdates) {
     gzdbg << __FUNCTION__ << "() called." << std::endl;
   }
@@ -112,38 +125,47 @@ void GazeboPressurePlugin::OnUpdate(const common::UpdateInfo& _info) {
     pubs_and_subs_created_ = true;
   }
 
+#if GAZEBO_9
+  common::Time current_time = world_->SimTime();
+#else
   common::Time current_time = world_->GetSimTime();
+#endif
   double dt = (current_time - last_time_).Double();
 
   if (dt < pressure_delay_)
-    return ;
+    return;
 
   // Get the current geometric height.
+  #if GAZEBO_9
+  double height_geometric_m = ref_alt_ + model_->WorldPose().Pos().Z();
+#else
   double height_geometric_m = ref_alt_ + model_->GetWorldPose().pos.z;
+#endif
 
   // Compute the geopotential height.
   double height_geopotential_m = kEarthRadiusMeters * height_geometric_m /
-      (kEarthRadiusMeters + height_geometric_m);
-
+                                 (kEarthRadiusMeters + height_geometric_m);
+http://www.smbc-comics.com/comic/mimic
   // Compute the temperature at the current altitude.
   double temperature_at_altitude_kelvin =
-      kSeaLevelTempKelvin - kTempLapseKelvinPerMeter * height_geopotential_m;
+    kSeaLevelTempKelvin - kTempLapseKelvinPerMeter * height_geopotential_m;
 
   // Compute the current air pressure.
   double pressure_at_altitude_pascal =
-      kPressureOneAtmospherePascals * exp(kAirConstantDimensionless *
-          log(kSeaLevelTempKelvin / temperature_at_altitude_kelvin));
+    kPressureOneAtmospherePascals *
+    exp(kAirConstantDimensionless *
+        log(kSeaLevelTempKelvin / temperature_at_altitude_kelvin));
 
   // Add noise to pressure measurement.
-  if(pressure_var_ > 0.0) {
+  if (pressure_var_ > 0.0) {
     pressure_at_altitude_pascal += pressure_n_[0](random_generator_);
   }
 
   // Fill the pressure message.
   pressure_message_.mutable_header()->mutable_stamp()->set_sec(
-      current_time.sec);
+    current_time.sec);
   pressure_message_.mutable_header()->mutable_stamp()->set_nsec(
-      current_time.nsec);
+    current_time.nsec);
   pressure_message_.set_fluid_pressure(pressure_at_altitude_pascal);
 
   // Publish the pressure message.
@@ -151,7 +173,9 @@ void GazeboPressurePlugin::OnUpdate(const common::UpdateInfo& _info) {
   last_time_ = current_time;
 }
 
-void GazeboPressurePlugin::CreatePubsAndSubs() {
+void
+GazeboPressurePlugin::CreatePubsAndSubs()
+{
   // Create temporary "ConnectGazeboToRosTopic" publisher and message.
   // gazebo::transport::PublisherPtr connect_gazebo_to_ros_topic_pub =
   //     node_handle_->Advertise<gz_std_msgs::ConnectGazeboToRosTopic>(
@@ -162,19 +186,20 @@ void GazeboPressurePlugin::CreatePubsAndSubs() {
   // ============================================ //
 
   pressure_pub_ = node_handle_->Advertise<gz_sensor_msgs::FluidPressure>(
-      model_->GetName() + "/" + pressure_topic_, 1);
+    model_->GetName() + "/" + pressure_topic_, 1);
 
-//   gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
-//   connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName() + "/" +
-//                                                    pressure_topic_);
-//   connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
-//                                                 pressure_topic_);
-//   connect_gazebo_to_ros_topic_msg.set_msgtype(
-//       gz_std_msgs::ConnectGazeboToRosTopic::FLUID_PRESSURE);
-//   connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,
-//                                            true);
+  //   gz_std_msgs::ConnectGazeboToRosTopic connect_gazebo_to_ros_topic_msg;
+  //   connect_gazebo_to_ros_topic_msg.set_gazebo_topic("~/" + model_->GetName()
+  //   + "/" +
+  //                                                    pressure_topic_);
+  //   connect_gazebo_to_ros_topic_msg.set_ros_topic(model_->GetName() + "/" +
+  //                                                 pressure_topic_);
+  //   connect_gazebo_to_ros_topic_msg.set_msgtype(
+  //       gz_std_msgs::ConnectGazeboToRosTopic::FLUID_PRESSURE);
+  //   connect_gazebo_to_ros_topic_pub->Publish(connect_gazebo_to_ros_topic_msg,
+  //                                            true);
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboPressurePlugin);
 
-}  // namespace gazebo
+} // namespace gazebo
