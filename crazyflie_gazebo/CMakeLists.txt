@@ -16,6 +16,8 @@ include(GNUInstallDirs)
 ## Find Dependencies ##
 #######################
 
+
+
 # Add search directory for CMake on OS X
 list(APPEND CMAKE_MODULE_PATH /usr/local/share/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -128,6 +130,8 @@ find_package(Boost 1.40 COMPONENTS system thread timer REQUIRED )
 ## Declare ROS messages, services and actions ##
 ################################################
 
+
+
 find_package(catkin REQUIRED COMPONENTS
   message_generation
   cmake_modules
@@ -145,6 +149,9 @@ add_message_files(
   FILES
   WindSpeed.msg
 )
+
+# declare crazyflie python module
+catkin_python_setup()
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -495,6 +502,8 @@ install(FILES ${worlds_list} DESTINATION ${RESOURCE_PATH}/worlds)
 
 configure_file(src/setup.sh.in "${CMAKE_CURRENT_BINARY_DIR}/setup.sh" @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.sh DESTINATION ${RESOURCE_PATH})
+
+
 
 
 #############

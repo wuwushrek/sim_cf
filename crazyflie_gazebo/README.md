@@ -34,7 +34,7 @@ cd ~/catkin_ws/src/sim_cf/crazyflie_gazebo/scripts
 ./run_cfs 4 19950
 ./run_cfs 3 19951
 ```
-[IMPORTANT] Then press PLAY button in gazebo and when ```gyrobias found``` is print in the console where the crazylfie has been launched : you are done. you can start executing high level script.
+[IMPORTANT] Then press PLAY button in gazebo and when ```gyrobias found``` is printed in the console where the crazylfie has been launched : you are done. you can start executing high level script.
 
 #### Kill every crazyflie instances that has been created by run_cfs
 This is useful before starting any simulation (launching gazebo)
