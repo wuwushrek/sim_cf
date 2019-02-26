@@ -2,6 +2,7 @@
 
 cf_gazebo_location=$(rospack find crazyflie_gazebo)
 
+# ------------------------------
 # Resolve script location using :
 # https://stackoverflow.com/a/246128/7002298
 SOURCE="${BASH_SOURCE[0]}"
@@ -15,6 +16,22 @@ echo "script location is $runcfs_dir"
 
 cf2=$runcfs_dir/../../crazyflie-firmware/sitl_make/build/cf2
 
+# -----------------------
+# setup the script so a Ctrl-C call will kill spawned cf2 instance
+spawned_cf2_pids=()
+function sigint_handler
+{
+	echo "------"
+	echo "run_cfs got SIGINT... killing spawned process"
+	for pid in ${spawned_cf2_pids[*]}; do
+		echo "killing ${pid}"
+		kill $pid
+	done
+	exit 0
+}
+trap sigint_handler SIGINT
+
+# ----------------------------
 if [ -z "$1" ]
 then
 	max_cfs=1
@@ -46,6 +63,16 @@ counter=1
 while [ $counter -le $max_cfs ]
 do
 	$cf2 $counter $udp_port $ip_address &
+	spawned_cf2_pids+=($!)
 	sleep 0.3
 	((counter++))
+done
+
+# wait for all pids
+echo "spawned process IDs: "
+for pid in ${spawned_cf2_pids[*]}; do
+	echo $pid
+done
+for pid in ${spawned_cf2_pids[*]}; do
+    wait $pid
 done
