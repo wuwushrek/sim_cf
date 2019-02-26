@@ -11,7 +11,7 @@ def arrayToGeometryPoint(a):
     return geometry_msgs.msg.Point(a[0], a[1], a[2])
 
 class Crazyflie:
-    def __init__(self, prefix, cf_id):
+    def __init__(self, prefix, cf_id, use_tf=False):
         """
         Creates a Crazyflie high-level wrapper
         
@@ -20,7 +20,8 @@ class Crazyflie:
             cf_id (int): drone id. Ex : 1
         """
         self.prefix = prefix
-        self.tf = TransformListener()
+        if use_tf:
+            self.tf = TransformListener()
         self.cf_id = cf_id
 
         rospy.wait_for_service(prefix + "/set_group_mask")
@@ -72,6 +73,8 @@ class Crazyflie:
         self.startTrajectoryService(groupMask, trajectoryId, timescale, reverse, relative)
 
     def position(self):
+        if not self.tf:
+            raise RuntimeError("CF instance was created without using tf. set use_tf=True to get position")
         self.tf.waitForTransform("/world", "/cf" + str(self.cf_id), rospy.Time(0), rospy.Duration(10))
         position, quaternion = self.tf.lookupTransform("/world", "/cf" + str(self.cf_id), rospy.Time(0))
         return np.array(position)
