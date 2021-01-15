@@ -11,7 +11,7 @@ This manual has been tested on a clean Ubuntu 16.04 LTS installation.
 Install basics dependencies and the protobuf library, which is used as interface to Gazebo.
 ```sh
 # Basic dependencies
-sudo apt-get install git zip qtcreator cmake build-essential genromfs ninja-build -y
+sudo apt-get install git zip qtcreator cmake build-essential genromfs ninja-build python-jinja2 -y
 # Protobuf , eigen3 and google-glog dependencies
 sudo apt-get install protobuf-compiler libgoogle-glog-dev libeigen3-dev libxml2-utils
 ```
